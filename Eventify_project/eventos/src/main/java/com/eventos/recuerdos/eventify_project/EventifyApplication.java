@@ -1,4 +1,4 @@
-package com.eventos.recuerdos.eventos;
+package com.eventos.recuerdos.eventify_project;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

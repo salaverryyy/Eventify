@@ -1,4 +1,4 @@
-package com.eventos.recuerdos.eventos;
+package com.eventos.recuerdos.eventify_project;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
