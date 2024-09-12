@@ -1,6 +1,6 @@
 package com.eventos.recuerdos.eventify_project.notificacion.domain;
 
-import com.eventos.recuerdos.eventify_project.user.domain.User;
+import com.eventos.recuerdos.eventify_project.usuario.domain.Usuario;
 import com.eventos.recuerdos.eventify_project.evento.domain.Evento;
 import jakarta.persistence.*;
 
@@ -16,7 +16,7 @@ public class Notificacion {
 
     @ManyToOne
     @JoinColumn(name = "usuario_id")
-    private User user;
+    private Usuario user;
 
     @ManyToOne
     @JoinColumn(name = "evento_id")

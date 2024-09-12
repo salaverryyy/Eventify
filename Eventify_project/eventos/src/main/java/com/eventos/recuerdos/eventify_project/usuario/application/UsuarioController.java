@@ -1,8 +1,8 @@
-package com.eventos.recuerdos.eventify_project.user.application;
+package com.eventos.recuerdos.eventify_project.usuario.application;
 
-import com.eventos.recuerdos.eventify_project.user.domain.User;
-import com.eventos.recuerdos.eventify_project.user.domain.UserService;
-import com.eventos.recuerdos.eventify_project.user.infrastructure.UserRepository;
+import com.eventos.recuerdos.eventify_project.usuario.domain.Usuario;
+import com.eventos.recuerdos.eventify_project.usuario.domain.UsuarioService;
+import com.eventos.recuerdos.eventify_project.usuario.infrastructure.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,33 +11,33 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/users")
-public class UserController {
+@RequestMapping("/crear/users")
+public class UsuarioController {
 
     @Autowired
-    private UserRepository userRepository;
+    private UsuarioRepository userRepository;
     @Autowired
-    private UserService userService;
+    private UsuarioService userService;
 
     @GetMapping
-    public List<User> getAllUsers() {
+    public List<Usuario> getAllUsers() {
         return userRepository.findAll();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        Optional<User> user = userRepository.findById(id);
+    public ResponseEntity<Usuario> getUserById(@PathVariable Long id) {
+        Optional<Usuario> user = userRepository.findById(id);
         return user.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public User createUser(@RequestBody User user) {
+    public Usuario createUser(@RequestBody Usuario user) {
         return userRepository.save(user);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User userDetails) {
+    public ResponseEntity<Usuario> updateUser(@PathVariable Long id, @RequestBody Usuario userDetails) {
         return userRepository.findById(id).map(user -> {
             user.setNombre(userDetails.getNombre());
             user.setEmail(userDetails.getEmail());

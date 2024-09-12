@@ -1,4 +1,4 @@
-package com.eventos.recuerdos.eventify_project.user.domain;
+package com.eventos.recuerdos.eventify_project.usuario.domain;
 
 import com.eventos.recuerdos.eventify_project.evento.domain.Evento;
 import jakarta.persistence.*;
@@ -8,7 +8,7 @@ import java.util.List;
 
 @Data
 @Entity
-public class User {
+public class Usuario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
