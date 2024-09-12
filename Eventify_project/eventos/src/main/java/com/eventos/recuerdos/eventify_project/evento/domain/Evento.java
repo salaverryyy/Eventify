@@ -1,6 +1,6 @@
 package com.eventos.recuerdos.eventify_project.evento.domain;
 
-import com.eventos.recuerdos.eventify_project.user.domain.User;
+import com.eventos.recuerdos.eventify_project.usuario.domain.Usuario;
 import com.eventos.recuerdos.eventify_project.recuerdo.domain.Recuerdo;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -25,7 +25,7 @@ public class Evento {
 
     @ManyToOne
     @JoinColumn(name = "organizador_id")
-    private User organizador;
+    private Usuario organizador;
 
     @OneToMany(mappedBy = "evento", cascade = CascadeType.ALL)
     private List<Recuerdo> recuerdos;
