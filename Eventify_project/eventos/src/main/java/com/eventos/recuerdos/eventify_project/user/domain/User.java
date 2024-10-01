@@ -1,6 +1,7 @@
 package com.eventos.recuerdos.eventify_project.user.domain;
 
 
+import com.eventos.recuerdos.eventify_project.invitation.domain.Invitation;
 import com.eventos.recuerdos.eventify_project.memory.domain.Memory;
 import jakarta.persistence.*;
 import lombok.Data;
