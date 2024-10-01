@@ -20,6 +20,6 @@ public class Publication {
     private String descripcion; //descripcion de la publicacion
     private LocalDate fechaPublicacion; //fecha de publicacion
     private int likes; //cantidad de Likes
-    private List<Comentario> comentarios; // lista de comentarios de la publicacion
+    private List<Comment> comentarios; // lista de comentarios de la publicacion
 
 }
