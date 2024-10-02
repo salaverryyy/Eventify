@@ -1,7 +1,11 @@
 package com.eventos.recuerdos.eventify_project.event.dto;
 
+import lombok.Data;
+
 import java.time.LocalDate;
 
+
+@Data
 public class EventDTO {
     private Long id;
     private String eventName;

@@ -25,6 +25,7 @@ public class Comment {
     @JoinColumn(name = "publication_id", nullable = false)
     private Publication publication; // Publicación a la que pertenece el comentario
 
+    @Column(nullable = false, length = 500) // Limitar la longitud del comentario a 500 caracteres
     private String content; // Contenido del comentario
 
     private LocalDateTime commentDate; // Fecha y hora en que se hizo el comentario

@@ -3,6 +3,7 @@ package com.eventos.recuerdos.eventify_project.user.domain;
 
 import com.eventos.recuerdos.eventify_project.invitation.domain.Invitation;
 import com.eventos.recuerdos.eventify_project.memory.domain.Memory;
+import com.eventos.recuerdos.eventify_project.notification.domain.Notification;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -27,5 +28,9 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Invitation> invitations = new ArrayList<>(); // Lista de invitaciones recibidas o enviadas
+
+    @OneToMany(mappedBy = "userReceiver", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Notification> notifications = new ArrayList<>();
+
 
 }

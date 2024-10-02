@@ -1,10 +1,13 @@
 package com.eventos.recuerdos.eventify_project.publication.dto;
 
 import com.eventos.recuerdos.eventify_project.comment.dto.CommentDTO;
+import lombok.Data;
 
 import java.time.LocalDate;
 import java.util.List;
 
+
+@Data
 public class DetailedPublicationDTO {
     private Long id;
     private String type;  // FOTO o VIDEO

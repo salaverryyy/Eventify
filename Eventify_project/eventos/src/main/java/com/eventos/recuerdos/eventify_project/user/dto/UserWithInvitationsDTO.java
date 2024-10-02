@@ -1,9 +1,12 @@
 package com.eventos.recuerdos.eventify_project.user.dto;
 
 import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationDTO;
+import lombok.Data;
 
 import java.util.List;
 
+
+@Data
 public class UserWithInvitationsDTO {
     private Long id;
     private String username;

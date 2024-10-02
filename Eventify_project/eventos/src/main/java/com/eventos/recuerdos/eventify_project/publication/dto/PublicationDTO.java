@@ -1,12 +1,14 @@
 package com.eventos.recuerdos.eventify_project.publication.dto;
 
-import com.eventos.recuerdos.eventify_project.publication.domain.TipoArchivo;
+import com.eventos.recuerdos.eventify_project.publication.domain.FileType;
+import lombok.Data;
 
 import java.time.LocalDate;
 
+@Data
 public class PublicationDTO {
     private Long id;
-    private TipoArchivo type;  // FOTO o VIDEO
+    private FileType type;  // FOTO o VIDEO
     private String fileUrl;
     private String description;
     private LocalDate publicationDate;

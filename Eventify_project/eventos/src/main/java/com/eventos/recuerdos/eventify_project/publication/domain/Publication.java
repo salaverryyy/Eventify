@@ -24,13 +24,13 @@ public class Publication {
 
     // Tipo de archivo (FOTO o VIDEO)
     @Enumerated(EnumType.STRING)
-    private TipoArchivo tipoArchivo; // Tipo de archivo (foto o video)
+    private FileType fileType; // Tipo de archivo (foto o video)
 
-    private String archivo; // URL del archivo almacenado (en AWS S3, por ejemplo)
+    private String fileUrl; // URL del archivo almacenado (en AWS S3, por ejemplo)
 
-    private String descripcion; // Descripción de la publicación
+    private String description; // Descripción de la publicación
 
-    private LocalDateTime fechaPublicacion; // Fecha y hora de la publicación
+    private LocalDateTime publicationDate; // Fecha y hora de la publicación
 
     // Relación One-to-Many con Likes
     @OneToMany(mappedBy = "publication", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
@@ -38,6 +38,6 @@ public class Publication {
 
     // Relación One-to-Many con Comentarios
     @OneToMany(mappedBy = "publication", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<Comment> comentarios = new ArrayList<>(); // Lista de comentarios en la publicación
+    private List<Comment> comments = new ArrayList<>(); // Lista de comentarios en la publicación
 
 }

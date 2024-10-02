@@ -1,5 +1,8 @@
 package com.eventos.recuerdos.eventify_project.notification.domain;
 
+import com.eventos.recuerdos.eventify_project.event.domain.Event;
+import com.eventos.recuerdos.eventify_project.memory.domain.Memory;
+import com.eventos.recuerdos.eventify_project.publication.domain.Publication;
 import com.eventos.recuerdos.eventify_project.user.domain.User;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -32,5 +35,15 @@ public class Notification {
     @Enumerated(EnumType.STRING)
     private RelatedWith relatedWith; // Indica con qué entidad está relacionada la notificación.
 
-    private Long relatedEntityId; // ID de la entidad relacionada (evento, recuerdo, publicación, etc.).
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "event_id", nullable = true)
+    private Event relatedEvent; // Relación con Event (si la notificación está relacionada con un evento)
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "memory_id", nullable = true)
+    private Memory relatedMemory; // Relación con Memory (si la notificación está relacionada con un recuerdo)
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "publication_id", nullable = true)
+    private Publication relatedPublication; // Relación con Publication (si la notificación está relacionada con una publicación)
 }
