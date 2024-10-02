@@ -10,6 +10,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -25,20 +26,20 @@ public class UserService {
 
     //metodos
     //obtener usuario por Id
-    public UserDTO getUserById(Long id){
-        Optional<User> userOptional = userRepository.findById(id);
-        if(userOptional.isPresent()){
-            return modelMapper.map(userOptional.get(),UserDTO.class);
-
-        }throw new RuntimeException("User not found");
+    public UserDTO getUserById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + id));
+        return modelMapper.map(user, UserDTO.class);
     }
 
     //crear nuevo usuario
-    public UserDTO createUser(UserDTO userDTO){
+    public UserDTO createUser(UserDTO userDTO) {
         User user = modelMapper.map(userDTO, User.class);
+        user.setUserCreationDate(LocalDate.now()); // Establece la fecha de creación
         User savedUser = userRepository.save(user);
         return modelMapper.map(savedUser, UserDTO.class);
     }
+
 
     //actualizar usuario
     public UserDTO updateUser(Long id, UserDTO userDTO){
