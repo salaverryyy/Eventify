@@ -2,10 +2,13 @@ package com.eventos.recuerdos.eventify_project.event.dto;
 
 import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationDTO;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
+import lombok.Data;
 
 import java.time.LocalDate;
 import java.util.List;
 
+
+@Data
 public class EventDetailDTO {
     private Long id;
     private String eventName;

@@ -27,7 +27,7 @@ public class Memory {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // Relación One-to-Many con publicaciones
+    // Relación One-to-Many con pw  ublicaciones
     @OneToMany(mappedBy = "memory", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Publication> publications = new ArrayList<>(); // Lista de publicaciones asociadas al recuerdo
 

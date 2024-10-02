@@ -1,7 +1,11 @@
 package com.eventos.recuerdos.eventify_project.memory.dto;
 
+import lombok.Data;
+
 import java.time.LocalDateTime;
 
+
+@Data
 public class MemoryDTO {
     private Long id;
     private String memoryName;
