@@ -13,7 +13,6 @@ import java.util.List;
 @Entity
 @Data
 public class Memory {
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -27,7 +26,7 @@ public class Memory {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // Relación One-to-Many con pw  ublicaciones
+    // Relación One-to-Many con publicaciones
     @OneToMany(mappedBy = "memory", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Publication> publications = new ArrayList<>(); // Lista de publicaciones asociadas al recuerdo
 

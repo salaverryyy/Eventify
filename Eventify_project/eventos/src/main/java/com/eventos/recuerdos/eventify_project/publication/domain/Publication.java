@@ -2,6 +2,7 @@ package com.eventos.recuerdos.eventify_project.publication.domain;
 
 import com.eventos.recuerdos.eventify_project.comment.domain.Comment;
 import com.eventos.recuerdos.eventify_project.like.domain.Like;
+import com.eventos.recuerdos.eventify_project.memory.domain.Memory;
 import com.eventos.recuerdos.eventify_project.user.domain.User;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -22,6 +23,11 @@ public class Publication {
     @JoinColumn(name = "user_id", nullable = false)
     private User user; // Usuario que hace la publicación
 
+    // Relación Many-to-One con Memory (recuerdo)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "memory_id", nullable = false)
+    private Memory memory; // Recuerdo al que pertenece la publicación
+
     // Tipo de archivo (FOTO o VIDEO)
     @Enumerated(EnumType.STRING)
     private FileType fileType; // Tipo de archivo (foto o video)
@@ -39,5 +45,4 @@ public class Publication {
     // Relación One-to-Many con Comentarios
     @OneToMany(mappedBy = "publication", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>(); // Lista de comentarios en la publicación
-
 }

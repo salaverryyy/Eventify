@@ -18,7 +18,8 @@ public class Invitation {
 
     // Relaciones
     @ManyToOne
-    private User inviterUser; // Usuario que envía la invitación
+    @JoinColumn(name = "user_id", nullable = false)
+    private User usuarioInvitador; // Usuario que envía la invitación
 
     @ManyToOne
     private Memory memory; // Recuerdo asociado a la invitación
