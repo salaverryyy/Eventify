@@ -1,6 +1,7 @@
 package com.eventos.recuerdos.eventify_project.memory.domain;
 
 import com.eventos.recuerdos.eventify_project.event.domain.Event;
+import com.eventos.recuerdos.eventify_project.invitation.domain.Invitation;
 import com.eventos.recuerdos.eventify_project.publication.domain.Publication;
 import com.eventos.recuerdos.eventify_project.user.domain.User;
 import jakarta.persistence.*;
@@ -29,6 +30,10 @@ public class Memory {
     // Relación One-to-Many con publicaciones
     @OneToMany(mappedBy = "memory", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Publication> publications = new ArrayList<>(); // Lista de publicaciones asociadas al recuerdo
+
+    //Relacion One-to-Many con Invitaciones
+    @OneToMany(mappedBy = "memory", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Invitation> invitations = new ArrayList<>(); // Lista de invitaciones del recuerdo
 
     // Relación Many-to-Many con eventos
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
