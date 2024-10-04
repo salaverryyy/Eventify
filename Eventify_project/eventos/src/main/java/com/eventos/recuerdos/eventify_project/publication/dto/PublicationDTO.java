@@ -3,6 +3,7 @@ package com.eventos.recuerdos.eventify_project.publication.dto;
 import com.eventos.recuerdos.eventify_project.publication.domain.FileType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.time.LocalDate;

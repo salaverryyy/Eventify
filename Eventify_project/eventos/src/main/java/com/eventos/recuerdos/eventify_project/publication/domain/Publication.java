@@ -6,6 +6,8 @@ import com.eventos.recuerdos.eventify_project.memory.domain.Memory;
 import com.eventos.recuerdos.eventify_project.user.domain.User;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -32,7 +34,7 @@ public class Publication {
     @Enumerated(EnumType.STRING)
     private FileType fileType; // Tipo de archivo (foto o video)
 
-    private String fileUrl; // URL del archivo almacenado (en AWS S3, por ejemplo)
+    private String fileUrl; // URL del archivo almacenado (en AWS S3)
 
     private String description; // Descripción de la publicación
 
