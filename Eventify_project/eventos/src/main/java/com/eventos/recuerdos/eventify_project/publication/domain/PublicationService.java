@@ -11,11 +11,14 @@ import com.eventos.recuerdos.eventify_project.memory.domain.Memory;
 import com.eventos.recuerdos.eventify_project.memory.infrastructure.MemoryRepository;
 import com.eventos.recuerdos.eventify_project.publication.dto.PublicationDTO;
 import com.eventos.recuerdos.eventify_project.publication.infrastructure.PublicationRepository;
+import com.eventos.recuerdos.eventify_project.user.domain.User;
+import com.eventos.recuerdos.eventify_project.user.infrastructure.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,6 +39,8 @@ public class PublicationService {
 
     @Autowired
     private ModelMapper modelMapper;
+    @Autowired
+    private UserRepository userRepository;
 
     //metodos
     //Obtener los detalles de una publicación por su ID.
@@ -46,34 +51,44 @@ public class PublicationService {
     }
 
     // Método para crear una publicación
-    public PublicationDTO createPublication(Long memoryId, MultipartFile file, String description) {
-
-        // Buscar el recuerdo (álbum) por ID
+    public PublicationDTO createPublication(Long memoryId, MultipartFile file, String description, Long userId) {
+        // Buscar el recuerdo (Memory) por ID y asegurarse de que existe
         Memory memory = memoryRepository.findById(memoryId)
-                .orElseThrow(() -> new ResourceNotFoundException("Memory not found with id " + memoryId));
+                .orElseThrow(() -> new ResourceNotFoundException("Recuerdo no encontrado con id: " + memoryId));
 
-        // Crear una nueva entidad de publicación
+        // Buscar el usuario por ID y asegurarse de que existe
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + userId));
+
+        // Crear una nueva publicación (Publication)
         Publication publication = new Publication();
-        publication.setMemory(memory); // Asocia la publicación al recuerdo
-        publication.setDescription(description); // Setea la descripción
-
-        // Subir el archivo a un servicio externo (ejemplo AWS S3) y obtener la URL
-        String fileUrl = uploadFileToS3(file);
-        publication.setFileUrl(fileUrl); // Guarda la URL del archivo
+        publication.setDescription(description);
+        publication.setFileUrl(file.getOriginalFilename());  // Aquí puedes manejar la lógica de subida a AWS S3 u otro almacenamiento
+        publication.setFileType(detectFileType(file));  // Detectar si el archivo es una imagen o video
+        publication.setUser(user);  // Asociar el usuario a la publicación
+        publication.setMemory(memory);  // Asociar la publicación al recuerdo
+        publication.setPublicationDate(LocalDateTime.now());  // Establecer la fecha de publicación actual
 
         // Guardar la publicación en la base de datos
-        publication = publicationRepository.save(publication);
+        Publication savedPublication = publicationRepository.save(publication);
 
-        // Mapear la entidad a un DTO y devolverlo
-        return modelMapper.map(publication, PublicationDTO.class);
+        // Mapear la publicación guardada a DTO y devolverla
+        return modelMapper.map(savedPublication, PublicationDTO.class);
     }
 
-    // Simula la subida del archivo a S3 y devuelve la URL (esto es solo un ejemplo)
-    private String uploadFileToS3(MultipartFile file) {
-        // Aquí iría la lógica para subir el archivo a AWS S3
-        // Por simplicidad, vamos a simular la subida y devolver una URL de prueba
-        return "https://bucket-s3.s3.amazonaws.com/" + file.getOriginalFilename();
+    // Método para detectar el tipo de archivo (imagen o video)
+    private FileType detectFileType(MultipartFile file) {
+        String contentType = file.getContentType();
+        if (contentType != null && contentType.startsWith("image")) {
+            return FileType.FOTO;
+        } else if (contentType != null && contentType.startsWith("video")) {
+            return FileType.VIDEO;
+        } else {
+            throw new IllegalArgumentException("Tipo de archivo no soportado");
+        }
     }
+
+
 
 
 

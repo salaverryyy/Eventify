@@ -3,20 +3,24 @@ package com.eventos.recuerdos.eventify_project.publication.dto;
 import com.eventos.recuerdos.eventify_project.publication.domain.FileType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 public class PublicationDTO {
-    @NotNull(message = "El ID no puede ser nulo.")
-    private Long id;
+    private Long id;  // El ID de la publicación (se puede omitir al crear una nueva)
+
+    @NotNull(message = "El ID del usuario no puede ser nulo.")
+    private Long userId;  // ID del usuario que hace la publicación
+
+    @NotNull(message = "El tipo de archivo no puede ser nulo.")
     private FileType type;  // FOTO o VIDEO
 
     @NotBlank(message = "La URL no puede estar en blanco.")
-    private String fileUrl;
-    private String description;
-    private LocalDate publicationDate;
+    private String fileUrl;  // URL del archivo (en AWS S3)
+
+    private String description;  // Descripción de la publicación
+
+    private LocalDateTime publicationDate;  // Fecha y hora de la publicación
 }
-//Transferir la información básica de publicaciones (fotos y videos)

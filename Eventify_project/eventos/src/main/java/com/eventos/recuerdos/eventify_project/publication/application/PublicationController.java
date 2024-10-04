@@ -27,18 +27,19 @@ public class PublicationController {
     }
 
     // Subir una nueva publicación a un recuerdo
-    @PostMapping(value = "/{memoryId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping("/{memoryId}")
     public ResponseEntity<PublicationDTO> createPublication(
             @PathVariable Long memoryId,
-            @RequestParam("file") MultipartFile file,
-            @RequestParam("description") String description) {
+            @RequestParam("userId") Long userId,
+            @RequestParam("description") String description,
+            @RequestParam("file") MultipartFile file) {
 
-        // Llamamos al servicio para crear la publicación
-        PublicationDTO createdPublication = publicationService.createPublication(memoryId, file, description);
-
-        // Retornamos una respuesta con el estado creado (201)
+        // Lógica del servicio
+        PublicationDTO createdPublication = publicationService.createPublication(memoryId, file, description, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdPublication);
     }
+
+
 
     //Editar la descripción o archivo de una publicación
     @PutMapping("/{id}")
