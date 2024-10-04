@@ -8,10 +8,13 @@ import com.eventos.recuerdos.eventify_project.memory.dto.MemoryWithPublicationsD
 import com.eventos.recuerdos.eventify_project.memory.infrastructure.MemoryRepository;
 import com.eventos.recuerdos.eventify_project.publication.dto.PublicationDTO;
 import com.eventos.recuerdos.eventify_project.publication.infrastructure.PublicationRepository;
+import com.eventos.recuerdos.eventify_project.user.domain.User;
+import com.eventos.recuerdos.eventify_project.user.infrastructure.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -26,6 +29,9 @@ public class MemoryService {
     @Autowired
     private ModelMapper modelMapper;
 
+    @Autowired
+    private UserRepository userRepository;
+
     public MemoryDTO getMemoryById(Long id) {
         Memory memory = memoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No se encontró el recuerdo con ID: " + id));
@@ -36,7 +42,11 @@ public class MemoryService {
         if (memoryRepository.existsByMemoryName(memoryDTO.getMemoryName())) {
             throw new ResourceConflictException("Ya existe un recuerdo con el mismo título.");
         }
+        User user = userRepository.findById(memoryDTO.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + memoryDTO.getUserId()));
         Memory memory = modelMapper.map(memoryDTO, Memory.class);
+        memory.setUser(user);
+        memory.setMemoryCreationDate(LocalDateTime.now());
         Memory savedMemory = memoryRepository.save(memory);
         return modelMapper.map(savedMemory, MemoryDTO.class);
     }
