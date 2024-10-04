@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 
 @Data
 public class PublicationDTO {
+
     private Long id;  // El ID de la publicación (se puede omitir al crear una nueva)
 
     @NotNull(message = "El ID del usuario no puede ser nulo.")

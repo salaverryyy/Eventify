@@ -27,9 +27,11 @@ public class MemoryService {
     private PublicationRepository publicationRepository;
 
     @Autowired
-    private UserRepository userRepository;
-    @Autowired
+
     private ModelMapper modelMapper;
+    @Autowired
+    private UserRepository userRepository;
+
 
     public MemoryDTO getMemoryById(Long id) {
         Memory memory = memoryRepository.findById(id)
@@ -38,19 +40,18 @@ public class MemoryService {
     }
 
     public MemoryDTO createMemory(MemoryDTO memoryDTO) {
+
+        if (memoryRepository.existsByMemoryName(memoryDTO.getMemoryName())) {
+            throw new ResourceConflictException("Ya existe un recuerdo con el mismo título.");
+        }
         User user = userRepository.findById(memoryDTO.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + memoryDTO.getUserId()));
-
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + memoryDTO.getUserId()));
         Memory memory = modelMapper.map(memoryDTO, Memory.class);
-
         memory.setUser(user);
-
         memory.setMemoryCreationDate(LocalDateTime.now());
         Memory savedMemory = memoryRepository.save(memory);
-
         return modelMapper.map(savedMemory, MemoryDTO.class);
     }
-
 
 
     public MemoryDTO updateMemory(Long id, MemoryDTO memoryDTO) {
