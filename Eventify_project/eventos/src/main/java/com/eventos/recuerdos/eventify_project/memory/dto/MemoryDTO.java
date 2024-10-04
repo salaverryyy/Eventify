@@ -1,5 +1,4 @@
 package com.eventos.recuerdos.eventify_project.memory.dto;
-
 import lombok.Data;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -9,7 +8,8 @@ import java.time.LocalDateTime;
 
 @Data
 public class MemoryDTO {
-    @NotNull
+
+    @NotNull(message = "El ID del usuario es obligatorio.")
     private Long userId;
 
     @NotBlank(message = "El título no puede estar en blanco.")
@@ -18,7 +18,10 @@ public class MemoryDTO {
 
     @Size(max = 500, message = "La descripción no puede exceder los 500 caracteres.")
     private String description;
+
     private LocalDateTime memoryCreationDate;
+
 }
+
 //Maneja la información de los recuerdos (álbumes virtuales), sin
 // entrar en detalles de publicaciones o eventos asociados.
