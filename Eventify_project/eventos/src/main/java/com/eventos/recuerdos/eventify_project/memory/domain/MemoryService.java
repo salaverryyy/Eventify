@@ -14,6 +14,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -41,11 +42,15 @@ public class MemoryService {
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + memoryDTO.getUserId()));
 
         Memory memory = modelMapper.map(memoryDTO, Memory.class);
-        memory.setUser(user); // Asocia el usuario al recuerdo
 
+        memory.setUser(user);
+
+        memory.setMemoryCreationDate(LocalDateTime.now());
         Memory savedMemory = memoryRepository.save(memory);
+
         return modelMapper.map(savedMemory, MemoryDTO.class);
     }
+
 
 
     public MemoryDTO updateMemory(Long id, MemoryDTO memoryDTO) {
