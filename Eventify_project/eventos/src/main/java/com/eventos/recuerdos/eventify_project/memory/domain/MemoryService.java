@@ -8,6 +8,8 @@ import com.eventos.recuerdos.eventify_project.memory.dto.MemoryWithPublicationsD
 import com.eventos.recuerdos.eventify_project.memory.infrastructure.MemoryRepository;
 import com.eventos.recuerdos.eventify_project.publication.dto.PublicationDTO;
 import com.eventos.recuerdos.eventify_project.publication.infrastructure.PublicationRepository;
+import com.eventos.recuerdos.eventify_project.user.domain.User;
+import com.eventos.recuerdos.eventify_project.user.infrastructure.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,8 @@ public class MemoryService {
     private PublicationRepository publicationRepository;
 
     @Autowired
+    private UserRepository userRepository;
+    @Autowired
     private ModelMapper modelMapper;
 
     public MemoryDTO getMemoryById(Long id) {
@@ -33,13 +37,16 @@ public class MemoryService {
     }
 
     public MemoryDTO createMemory(MemoryDTO memoryDTO) {
-        if (memoryRepository.existsByMemoryName(memoryDTO.getMemoryName())) {
-            throw new ResourceConflictException("Ya existe un recuerdo con el mismo título.");
-        }
+        User user = userRepository.findById(memoryDTO.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + memoryDTO.getUserId()));
+
         Memory memory = modelMapper.map(memoryDTO, Memory.class);
+        memory.setUser(user); // Asocia el usuario al recuerdo
+
         Memory savedMemory = memoryRepository.save(memory);
         return modelMapper.map(savedMemory, MemoryDTO.class);
     }
+
 
     public MemoryDTO updateMemory(Long id, MemoryDTO memoryDTO) {
         Memory memory = memoryRepository.findById(id)
