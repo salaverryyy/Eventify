@@ -1,5 +1,6 @@
 package com.eventos.recuerdos.eventify_project.publication.application;
 
+
 import com.eventos.recuerdos.eventify_project.comment.dto.CommentDTO;
 import com.eventos.recuerdos.eventify_project.like.dto.LikeDTO;
 import com.eventos.recuerdos.eventify_project.publication.domain.PublicationService;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+
 
 @RestController
 @RequestMapping("/publication")
@@ -82,9 +84,5 @@ public class PublicationController {
         publicationService.removeLike(id, likeDTO);
         return ResponseEntity.noContent().build();
     }
-
-
-
-
 
 }
