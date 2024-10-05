@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Data
+@Table(name = "likes")
 public class Like {
 
     @Id
