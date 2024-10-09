@@ -24,7 +24,7 @@ public class Memory {
 
     // Relación Many-to-One con User (usuario creador del recuerdo)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     private User user;
 
     // Relación One-to-Many con publicaciones
