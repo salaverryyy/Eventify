@@ -14,6 +14,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -28,7 +29,11 @@ public class MemoryService {
     private UserRepository userRepository;
 
     @Autowired
+
     private ModelMapper modelMapper;
+    @Autowired
+    private UserRepository userRepository;
+
 
     public MemoryDTO getMemoryById(Long id) {
         Memory memory = memoryRepository.findById(id)
@@ -37,22 +42,15 @@ public class MemoryService {
     }
 
     public MemoryDTO createMemory(MemoryDTO memoryDTO) {
-        // Verificar si ya existe un recuerdo con el mismo nombre
+
         if (memoryRepository.existsByMemoryName(memoryDTO.getMemoryName())) {
             throw new ResourceConflictException("Ya existe un recuerdo con el mismo título.");
         }
-
-        // Buscar al usuario por el userId que viene en el DTO
         User user = userRepository.findById(memoryDTO.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + memoryDTO.getUserId()));
-
-        // Mapear el DTO a la entidad Memory
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + memoryDTO.getUserId()));
         Memory memory = modelMapper.map(memoryDTO, Memory.class);
-
-        // Asignar el usuario a la entidad Memory
         memory.setUser(user);
-
-        // Guardar el Memory en la base de datos
+        memory.setMemoryCreationDate(LocalDateTime.now());
         Memory savedMemory = memoryRepository.save(memory);
 
         // Retornar el DTO del Memory guardado

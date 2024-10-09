@@ -1,5 +1,6 @@
 package com.eventos.recuerdos.eventify_project.publication.application;
 
+
 import com.eventos.recuerdos.eventify_project.comment.dto.CommentDTO;
 import com.eventos.recuerdos.eventify_project.like.dto.LikeDTO;
 import com.eventos.recuerdos.eventify_project.publication.domain.PublicationService;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+
 
 @RestController
 @RequestMapping("/publication")
@@ -27,9 +29,10 @@ public class PublicationController {
     }
 
     // Subir una nueva publicación a un recuerdo
-    @PostMapping(value = "/{memoryId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping("/{memoryId}")
     public ResponseEntity<PublicationDTO> createPublication(
             @PathVariable Long memoryId,
+
             @RequestParam("file") MultipartFile file,
             @RequestParam("description") String description,
             @RequestParam("userId") Long userId) {
@@ -37,7 +40,9 @@ public class PublicationController {
         // Llamamos al servicio para crear la publicación
         PublicationDTO createdPublication = publicationService.createPublication(memoryId, file, description, userId);
 
-        // Retornamos una respuesta con el estado creado (201)
+
+        // Lógica del servicio
+        PublicationDTO createdPublication = publicationService.createPublication(memoryId, file, description, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdPublication);
     }
 
@@ -83,9 +88,5 @@ public class PublicationController {
         publicationService.removeLike(id, likeDTO);
         return ResponseEntity.noContent().build();
     }
-
-
-
-
 
 }
