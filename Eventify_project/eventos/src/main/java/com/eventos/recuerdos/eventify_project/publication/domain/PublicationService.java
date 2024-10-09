@@ -11,11 +11,14 @@ import com.eventos.recuerdos.eventify_project.memory.domain.Memory;
 import com.eventos.recuerdos.eventify_project.memory.infrastructure.MemoryRepository;
 import com.eventos.recuerdos.eventify_project.publication.dto.PublicationDTO;
 import com.eventos.recuerdos.eventify_project.publication.infrastructure.PublicationRepository;
+import com.eventos.recuerdos.eventify_project.user.domain.User;
+import com.eventos.recuerdos.eventify_project.user.infrastructure.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,6 +40,8 @@ public class PublicationService {
     @Autowired
     private ModelMapper modelMapper;
 
+    @Autowired
+    private UserRepository userRepository;
     //metodos
     //Obtener los detalles de una publicación por su ID.
     public PublicationDTO getPublicationById(Long id) {
@@ -46,20 +51,32 @@ public class PublicationService {
     }
 
     // Método para crear una publicación
-    public PublicationDTO createPublication(Long memoryId, MultipartFile file, String description) {
+    public PublicationDTO createPublication(Long memoryId, MultipartFile file, String description, Long userId) {
 
         // Buscar el recuerdo (álbum) por ID
         Memory memory = memoryRepository.findById(memoryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Memory not found with id " + memoryId));
 
+        // Buscar al usuario por ID
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id " + userId));
+
         // Crear una nueva entidad de publicación
         Publication publication = new Publication();
         publication.setMemory(memory); // Asocia la publicación al recuerdo
+        publication.setUser(user); // Asocia la publicación al usuario
         publication.setDescription(description); // Setea la descripción
 
         // Subir el archivo a un servicio externo (ejemplo AWS S3) y obtener la URL
         String fileUrl = uploadFileToS3(file);
         publication.setFileUrl(fileUrl); // Guarda la URL del archivo
+
+        // Detectar el tipo de archivo (FOTO o VIDEO)
+        FileType fileType = detectFileType(file);
+        publication.setFileType(fileType); // Setea el tipo de archivo
+
+        // Establecer la fecha de publicación actual
+        publication.setPublicationDate(LocalDateTime.now());
 
         // Guardar la publicación en la base de datos
         publication = publicationRepository.save(publication);
@@ -67,6 +84,20 @@ public class PublicationService {
         // Mapear la entidad a un DTO y devolverlo
         return modelMapper.map(publication, PublicationDTO.class);
     }
+
+    // Detectar si el archivo es una imagen o un video basado en el tipo MIME
+    private FileType detectFileType(MultipartFile file) {
+        String contentType = file.getContentType();
+        if (contentType != null && contentType.startsWith("image")) {
+            return FileType.FOTO;
+        } else if (contentType != null && contentType.startsWith("video")) {
+            return FileType.VIDEO;
+        } else {
+            throw new IllegalArgumentException("Tipo de archivo no soportado");
+        }
+    }
+
+
 
     // Simula la subida del archivo a S3 y devuelve la URL (esto es solo un ejemplo)
     private String uploadFileToS3(MultipartFile file) {

@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 public class PublicationDTO {
@@ -17,6 +17,6 @@ public class PublicationDTO {
     @NotBlank(message = "La URL no puede estar en blanco.")
     private String fileUrl;
     private String description;
-    private LocalDate publicationDate;
+    private LocalDateTime publicationDate;
 }
 //Transferir la información básica de publicaciones (fotos y videos)

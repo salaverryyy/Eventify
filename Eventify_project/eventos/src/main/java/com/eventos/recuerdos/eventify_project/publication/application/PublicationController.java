@@ -31,14 +31,16 @@ public class PublicationController {
     public ResponseEntity<PublicationDTO> createPublication(
             @PathVariable Long memoryId,
             @RequestParam("file") MultipartFile file,
-            @RequestParam("description") String description) {
+            @RequestParam("description") String description,
+            @RequestParam("userId") Long userId) {
 
         // Llamamos al servicio para crear la publicación
-        PublicationDTO createdPublication = publicationService.createPublication(memoryId, file, description);
+        PublicationDTO createdPublication = publicationService.createPublication(memoryId, file, description, userId);
 
         // Retornamos una respuesta con el estado creado (201)
         return ResponseEntity.status(HttpStatus.CREATED).body(createdPublication);
     }
+
 
     //Editar la descripción o archivo de una publicación
     @PutMapping("/{id}")

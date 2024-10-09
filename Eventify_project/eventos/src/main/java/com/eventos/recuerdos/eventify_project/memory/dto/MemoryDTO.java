@@ -17,6 +17,9 @@ public class MemoryDTO {
     @Size(max = 500, message = "La descripción no puede exceder los 500 caracteres.")
     private String description;
     private LocalDateTime memoryCreationDate;
+
+    @NotNull(message = "El ID del usuario no puede estar en blanco.")
+    private Long userId;
 }
 //Maneja la información de los recuerdos (álbumes virtuales), sin
 // entrar en detalles de publicaciones o eventos asociados.
