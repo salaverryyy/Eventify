@@ -1,6 +1,6 @@
 package com.eventos.recuerdos.eventify_project.like.infrastructure;
 
-import com.eventos.recuerdos.eventify_project.like.domain.Like;
+import com.eventos.recuerdos.eventify_project.like.domain.PublicationLike;
 import com.eventos.recuerdos.eventify_project.publication.domain.Publication;
 import com.eventos.recuerdos.eventify_project.user.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,9 +10,9 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface LikeRepository extends JpaRepository<Like, Long> {
+public interface LikeRepository extends JpaRepository<PublicationLike, Long> {
 
-    List<Like> findByPublication(Publication publication);
+    List<PublicationLike> findByPublication(Publication publication);
 
-    Optional<Like> findByPublicationAndUser(Publication publication, User user);
+    Optional<PublicationLike> findByPublicationAndUser(Publication publication, User user);
 }

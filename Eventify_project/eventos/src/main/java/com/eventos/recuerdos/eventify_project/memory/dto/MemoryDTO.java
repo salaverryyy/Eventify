@@ -12,6 +12,8 @@ import java.time.LocalDateTime;
 @Data
 public class MemoryDTO {
 
+    private Long id;
+
     @NotNull(message = "El ID del usuario es obligatorio.")
     private Long userId;
 

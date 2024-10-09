@@ -45,11 +45,19 @@ public class PublicationController {
 
 
     //Editar la descripción o archivo de una publicación
-    @PutMapping("/{id}")
-    public ResponseEntity<PublicationDTO> updatePublication(@PathVariable Long id, @RequestBody PublicationDTO publicationDTO) {
-        PublicationDTO updatedPublication = publicationService.updatePublication(id, publicationDTO);
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<PublicationDTO> updatePublication(
+            @PathVariable Long id,
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("description") String description) {
+
+        // Llamar al servicio para actualizar la publicación
+        PublicationDTO updatedPublication = publicationService.updatePublication(id, file, description);
+
+        // Retornar la respuesta con la publicación actualizada
         return ResponseEntity.ok(updatedPublication);
     }
+
 
     //Eliminar una publicación
     @DeleteMapping("/{id}")

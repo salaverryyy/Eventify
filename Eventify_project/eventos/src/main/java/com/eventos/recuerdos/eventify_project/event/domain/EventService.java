@@ -4,7 +4,11 @@ import com.eventos.recuerdos.eventify_project.event.dto.EventDTO;
 import com.eventos.recuerdos.eventify_project.event.infrastructure.EventRepository;
 import com.eventos.recuerdos.eventify_project.exception.ResourceNotFoundException;
 import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationDTO;
+import com.eventos.recuerdos.eventify_project.memory.domain.Memory;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
+import com.eventos.recuerdos.eventify_project.memory.infrastructure.MemoryRepository;
+import com.eventos.recuerdos.eventify_project.user.domain.User;
+import com.eventos.recuerdos.eventify_project.user.infrastructure.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,6 +21,12 @@ public class EventService {
 
     @Autowired
     private EventRepository eventRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private MemoryRepository memoryRepository;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -37,13 +47,30 @@ public class EventService {
 
     // Actualizar un evento existente
     public EventDTO updateEvent(Long id, EventDTO eventDTO) {
+        // Busca el evento que deseas actualizar
         Event event = eventRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado con id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado con ID: " + id));
 
-        modelMapper.map(eventDTO, event); // Actualiza los detalles del evento
+        // Actualiza los campos del evento, excepto el ID
+        event.setEventName(eventDTO.getEventName());
+        event.setEventDescription(eventDTO.getEventDescription());
+        event.setEventDate(eventDTO.getEventDate());
+
+        // Actualizar el organizador solo si se proporciona un organizerId válido
+        if (eventDTO.getOrganizerId() != null) {
+            User organizer = userRepository.findById(eventDTO.getOrganizerId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Organizador no encontrado con ID: " + eventDTO.getOrganizerId()));
+            event.setOrganizer(organizer);
+        }
+
+        // Guarda el evento actualizado
         Event updatedEvent = eventRepository.save(event);
+
+        // Retorna el DTO del evento actualizado
         return modelMapper.map(updatedEvent, EventDTO.class);
     }
+
+
 
     // Eliminar un evento
     public void deleteEvent(Long id) {
@@ -52,14 +79,19 @@ public class EventService {
         eventRepository.delete(event);
     }
 
-    // Obtener todos los recuerdos asociados a un evento
-    public List<MemoryDTO> getEventMemories(Long id) {
+    // Obtener el recuerdo asociado a un evento
+    public MemoryDTO getEventMemory(Long id) {
         Event event = eventRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado con id: " + id));
-        return event.getMemories().stream()
-                .map(memory -> modelMapper.map(memory, MemoryDTO.class))
-                .collect(Collectors.toList());
+
+        Memory memory = event.getMemory();
+        if (memory == null) {
+            throw new ResourceNotFoundException("No hay recuerdo asociado con el evento con id: " + id);
+        }
+
+        return modelMapper.map(memory, MemoryDTO.class);
     }
+
 
     // Obtener lista de invitados del evento
     public List<InvitationDTO> getEventInvitations(Long id) {
@@ -70,6 +102,22 @@ public class EventService {
                 .collect(Collectors.toList());
     }
 
+    // Método para agregar un Memory a un Event
+    public EventDTO addMemoryToEvent(Long eventId, Long memoryId) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado con id: " + eventId));
+
+        Memory memory = memoryRepository.findById(memoryId)
+                .orElseThrow(() -> new ResourceNotFoundException("Recuerdo no encontrado con id: " + memoryId));
+
+        event.setMemory(memory);  // Asociamos el Memory al Event
+        eventRepository.save(event);  // Guardamos el evento actualizado
+
+        // Mapear el Event a EventDTO, incluyendo el MemoryDTO
+        EventDTO eventDTO = modelMapper.map(event, EventDTO.class);
+        eventDTO.setMemory(modelMapper.map(memory, MemoryDTO.class));  // Incluye el MemoryDTO
+        return eventDTO;
+    }
 
 
     //Obtener todos los eventos creados
