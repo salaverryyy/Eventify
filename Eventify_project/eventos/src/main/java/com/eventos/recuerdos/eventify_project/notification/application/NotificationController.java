@@ -71,4 +71,11 @@ public class NotificationController {
         notificationService.unmarkNotificationAsRead(id);
         return ResponseEntity.ok().build();
     }
+
+    //Obtener todas las notificaciones existentes
+    @GetMapping
+    public ResponseEntity<List<NotificationDTO>> getAllNotifications() {
+        List<NotificationDTO> notifications = notificationService.getAllNotifications();
+        return ResponseEntity.ok(notifications);
+    }
 }
