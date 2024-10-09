@@ -4,8 +4,10 @@ import com.eventos.recuerdos.eventify_project.event.domain.Event;
 import com.eventos.recuerdos.eventify_project.memory.domain.Memory;
 import com.eventos.recuerdos.eventify_project.user.domain.User;
 import jakarta.persistence.*;
+import lombok.Data;
 
 @Entity
+@Data
 public class Invitation {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
