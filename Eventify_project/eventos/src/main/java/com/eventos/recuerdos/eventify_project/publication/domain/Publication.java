@@ -1,11 +1,13 @@
 package com.eventos.recuerdos.eventify_project.publication.domain;
 
 import com.eventos.recuerdos.eventify_project.comment.domain.Comment;
-import com.eventos.recuerdos.eventify_project.like.domain.Like;
+import com.eventos.recuerdos.eventify_project.like.domain.PublicationLike;
 import com.eventos.recuerdos.eventify_project.memory.domain.Memory;
 import com.eventos.recuerdos.eventify_project.user.domain.User;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -21,6 +23,7 @@ public class Publication {
     // Relación Many-to-One con el Usuario que hizo la publicación
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;  // Usuario que hace la publicación
 
     // Relación Many-to-One con Memory (recuerdo)
@@ -42,7 +45,7 @@ public class Publication {
 
     // Relación One-to-Many con Likes
     @OneToMany(mappedBy = "publication", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<Like> likes = new ArrayList<>();  // Lista de likes recibidos
+    private List<PublicationLike> publicationLikes = new ArrayList<>();  // Lista de likes recibidos
 
     // Relación One-to-Many con Comentarios
     @OneToMany(mappedBy = "publication", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)

@@ -45,18 +45,26 @@ public class EventController {
         return ResponseEntity.noContent().build();
     }
 
-    //Obtener todos los recuerdos asociados a un evento
-    @GetMapping("/{id}/recuerdos")
-    public ResponseEntity<List<MemoryDTO>> getEventMemories(@PathVariable Long id) {
-        List<MemoryDTO> memories = eventService.getEventMemories(id);
-        return ResponseEntity.ok(memories);
+    // Obtener el recuerdo asociado a un evento
+    @GetMapping("/{id}/memory")
+    public ResponseEntity<MemoryDTO> getEventMemory(@PathVariable Long id) {
+        MemoryDTO memoryDTO = eventService.getEventMemory(id);
+        return ResponseEntity.ok(memoryDTO);
     }
+
 
     //Obtener la lista de invitados del evento
     @GetMapping("/{id}/invitados")
     public ResponseEntity<List<InvitationDTO>> getEventInvitations(@PathVariable Long id) {
         List<InvitationDTO> invitations = eventService.getEventInvitations(id);
         return ResponseEntity.ok(invitations);
+    }
+
+    // Endpoint para asociar un Memory a un Event
+    @PostMapping("/{eventId}/memory/{memoryId}")
+    public ResponseEntity<EventDTO> addMemoryToEvent(@PathVariable Long eventId, @PathVariable Long memoryId) {
+        EventDTO updatedEvent = eventService.addMemoryToEvent(eventId, memoryId);
+        return ResponseEntity.ok(updatedEvent);
     }
 
     //Obtener todos los Eventos creados

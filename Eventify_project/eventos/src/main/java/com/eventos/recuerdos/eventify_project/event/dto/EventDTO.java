@@ -1,5 +1,6 @@
 package com.eventos.recuerdos.eventify_project.event.dto;
 
+import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -11,4 +12,5 @@ public class EventDTO {
     private String eventDescription;
     private LocalDate eventDate;
     private Long organizerId;  // ID del usuario organizador
+    private MemoryDTO memory;
 }

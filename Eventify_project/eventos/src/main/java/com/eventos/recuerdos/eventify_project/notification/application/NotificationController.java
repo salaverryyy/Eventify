@@ -78,4 +78,5 @@ public class NotificationController {
         List<NotificationDTO> notifications = notificationService.getAllNotifications();
         return ResponseEntity.ok(notifications);
     }
+
 }

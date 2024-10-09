@@ -34,10 +34,10 @@ public class LikeService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + userId));
 
-        Like like = new Like();
-        like.setPublication(publication);
-        like.setUser(user);
-        likeRepository.save(like);
+        PublicationLike publicationLike = new PublicationLike();
+        publicationLike.setPublication(publication);
+        publicationLike.setUser(user);
+        likeRepository.save(publicationLike);
     }
 
     // Obtener la lista de usuarios que han dado "me gusta" a una publicación
@@ -47,7 +47,7 @@ public class LikeService {
 
         return likeRepository.findByPublication(publication)
                 .stream()
-                .map(like -> modelMapper.map(like.getUser(), UserDTO.class))
+                .map(publicationLike -> modelMapper.map(publicationLike.getUser(), UserDTO.class))
                 .collect(Collectors.toList());
     }
 
@@ -59,17 +59,17 @@ public class LikeService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + userId));
 
-        Like like = likeRepository.findByPublicationAndUser(publication, user)
+        PublicationLike publicationLike = likeRepository.findByPublicationAndUser(publication, user)
                 .orElseThrow(() -> new ResourceNotFoundException("El usuario no ha dado 'me gusta' a esta publicación."));
 
-        likeRepository.delete(like);
+        likeRepository.delete(publicationLike);
     }
 
     //obtener todos los likes dados
     public List<LikeDTO> getAllLikes() {
-        List<Like> likes = likeRepository.findAll();
-        return likes.stream()
-                .map(like -> modelMapper.map(like, LikeDTO.class))
+        List<PublicationLike> publicationLikes = likeRepository.findAll();
+        return publicationLikes.stream()
+                .map(publicationLike -> modelMapper.map(publicationLike, LikeDTO.class))
                 .collect(Collectors.toList());
     }
 }

@@ -2,8 +2,11 @@ package com.eventos.recuerdos.eventify_project.user.domain;
 
 import com.eventos.recuerdos.eventify_project.exception.ResourceNotFoundException;
 import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationDTO;
+import com.eventos.recuerdos.eventify_project.invitation.infrastructure.InvitationRepository;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
 import com.eventos.recuerdos.eventify_project.notification.dto.NotificationDTO;
+import com.eventos.recuerdos.eventify_project.publication.domain.Publication;
+import com.eventos.recuerdos.eventify_project.publication.infrastructure.PublicationRepository;
 import com.eventos.recuerdos.eventify_project.user.dto.UserDTO;
 import com.eventos.recuerdos.eventify_project.user.infrastructure.UserRepository;
 import org.modelmapper.ModelMapper;
@@ -20,6 +23,9 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private PublicationRepository publicationRepository;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -57,12 +63,14 @@ public class UserService {
 
     //eliminar usuario
     public void deleteUser(Long id) {
-        if (userRepository.existsById(id)) {
-            userRepository.deleteById(id);
-        } else {
-            throw new RuntimeException("User not found");
-        }
+        // Eliminar todas las publicaciones asociadas al usuario
+        List<Publication> publications = publicationRepository.findByUserId(id);
+        publicationRepository.deleteAll(publications);
+
+        // Luego eliminar al usuario
+        userRepository.deleteById(id);
     }
+
 
     //Obtener todos los recuerdos creados por el usuario
     public List<MemoryDTO> getUserMemories(Long userId) {

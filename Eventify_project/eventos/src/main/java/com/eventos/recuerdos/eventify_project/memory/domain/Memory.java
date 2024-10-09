@@ -14,6 +14,7 @@ import java.util.List;
 @Entity
 @Data
 public class Memory {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -31,16 +32,11 @@ public class Memory {
     @OneToMany(mappedBy = "memory", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Publication> publications = new ArrayList<>(); // Lista de publicaciones asociadas al recuerdo
 
-    //Relacion One-to-Many con Invitaciones
+    // Relación One-to-Many con invitaciones
     @OneToMany(mappedBy = "memory", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Invitation> invitations = new ArrayList<>(); // Lista de invitaciones del recuerdo
 
-    // Relación Many-to-Many con eventos
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(
-            name = "memory_event",
-            joinColumns = @JoinColumn(name = "memory_id"),
-            inverseJoinColumns = @JoinColumn(name = "event_id")
-    )
-    private List<Event> events = new ArrayList<>(); // Lista de eventos asociados al recuerdo
+    // Relación One-to-One con Event
+    @OneToOne(mappedBy = "memory", fetch = FetchType.LAZY)
+    private Event event; // Relación One-to-One con Event
 }
