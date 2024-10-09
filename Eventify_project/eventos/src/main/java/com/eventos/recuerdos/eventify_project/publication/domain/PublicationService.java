@@ -39,11 +39,11 @@ public class PublicationService {
 
     @Autowired
     private ModelMapper modelMapper;
+
     @Autowired
     private UserRepository userRepository;
 
-    //metodos
-    //Obtener los detalles de una publicación por su ID.
+    // Obtener los detalles de una publicación por su ID
     public PublicationDTO getPublicationById(Long id) {
         Publication publication = publicationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Publicación no encontrada con ID: " + id));
@@ -52,6 +52,7 @@ public class PublicationService {
 
     // Método para crear una publicación
     public PublicationDTO createPublication(Long memoryId, MultipartFile file, String description, Long userId) {
+
         // Buscar el recuerdo (Memory) por ID y asegurarse de que existe
         Memory memory = memoryRepository.findById(memoryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Recuerdo no encontrado con id: " + memoryId));
@@ -63,7 +64,7 @@ public class PublicationService {
         // Crear una nueva publicación (Publication)
         Publication publication = new Publication();
         publication.setDescription(description);
-        publication.setFileUrl(file.getOriginalFilename());  // Aquí puedes manejar la lógica de subida a AWS S3 u otro almacenamiento
+        publication.setFileUrl(uploadFileToS3(file));  // Aquí puedes manejar la lógica de subida a AWS S3
         publication.setFileType(detectFileType(file));  // Detectar si el archivo es una imagen o video
         publication.setUser(user);  // Asociar el usuario a la publicación
         publication.setMemory(memory);  // Asociar la publicación al recuerdo
@@ -88,11 +89,13 @@ public class PublicationService {
         }
     }
 
+    // Simula la subida del archivo a S3 y devuelve la URL (esto es solo un ejemplo)
+    private String uploadFileToS3(MultipartFile file) {
+        // Aquí iría la lógica para subir el archivo a AWS S3
+        return "https://bucket-s3.s3.amazonaws.com/" + file.getOriginalFilename();
+    }
 
-
-
-
-    //Editar la descripción o archivo de una publicación
+    // Editar la descripción o archivo de una publicación
     public PublicationDTO updatePublication(Long id, PublicationDTO publicationDTO) {
         Publication publication = publicationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Publicación no encontrada con ID: " + id));
@@ -104,26 +107,27 @@ public class PublicationService {
         return modelMapper.map(publication, PublicationDTO.class);
     }
 
-    //Eliminar una publicación
+    // Eliminar una publicación
     public void deletePublication(Long id) {
         Publication publication = publicationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Publicación no encontrada con ID: " + id));
         publicationRepository.delete(publication);
     }
 
-    //Dar "me gusta" a una publicación
+    // Dar "me gusta" a una publicación
     public LikeDTO likePublication(Long publicationId, LikeDTO likeDTO) {
         Publication publication = publicationRepository.findById(publicationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Publicación no encontrada con ID: " + publicationId));
 
         Like like = modelMapper.map(likeDTO, Like.class);
         like.setPublication(publication);
+        like.setLikeDate(LocalDateTime.now());  // Establecer la fecha y hora actual del like
 
         likeRepository.save(like);
         return modelMapper.map(like, LikeDTO.class);
     }
 
-    //Comentar en una publicación
+    // Comentar en una publicación
     public CommentDTO commentOnPublication(Long publicationId, CommentDTO commentDTO) {
         Publication publication = publicationRepository.findById(publicationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Publicación no encontrada con ID: " + publicationId));
@@ -135,7 +139,7 @@ public class PublicationService {
         return modelMapper.map(comment, CommentDTO.class);
     }
 
-    //Obtener la lista de usuarios que dieron "me gusta" a una publicación
+    // Obtener la lista de usuarios que dieron "me gusta" a una publicación
     public List<LikeDTO> getLikesByPublication(Long publicationId) {
         Publication publication = publicationRepository.findById(publicationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Publicación no encontrada con ID: " + publicationId));
@@ -145,7 +149,7 @@ public class PublicationService {
                 .collect(Collectors.toList());
     }
 
-    //Quitar "me gusta" de una publicación
+    // Quitar "me gusta" de una publicación
     public void removeLike(Long publicationId, LikeDTO likeDTO) {
         Publication publication = publicationRepository.findById(publicationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Publicación no encontrada con ID: " + publicationId));
@@ -156,8 +160,7 @@ public class PublicationService {
         likeRepository.delete(like);
     }
 
-
-    //contadir de likes
+    // Contador de likes
     public int getLikeCount(Long publicationId) {
         Publication publication = publicationRepository.findById(publicationId)
                 .orElseThrow(() -> new RuntimeException("Publicación no encontrada"));

@@ -25,6 +25,8 @@ public class MemoryService {
     private MemoryRepository memoryRepository;
     @Autowired
     private PublicationRepository publicationRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
 
@@ -50,6 +52,8 @@ public class MemoryService {
         memory.setUser(user);
         memory.setMemoryCreationDate(LocalDateTime.now());
         Memory savedMemory = memoryRepository.save(memory);
+
+        // Retornar el DTO del Memory guardado
         return modelMapper.map(savedMemory, MemoryDTO.class);
     }
 
