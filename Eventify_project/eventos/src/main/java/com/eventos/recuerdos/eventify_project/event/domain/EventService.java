@@ -69,4 +69,14 @@ public class EventService {
                 .map(invitation -> modelMapper.map(invitation, InvitationDTO.class))
                 .collect(Collectors.toList());
     }
+
+
+
+    //Obtener todos los eventos creados
+    public List<EventDTO> getAllEvents() {
+        List<Event> events = eventRepository.findAll();
+        return events.stream()
+                .map(event -> modelMapper.map(event, EventDTO.class))
+                .collect(Collectors.toList());
+    }
 }

@@ -31,9 +31,6 @@ public class MemoryService {
     @Autowired
 
     private ModelMapper modelMapper;
-    @Autowired
-    private UserRepository userRepository;
-
 
     public MemoryDTO getMemoryById(Long id) {
         Memory memory = memoryRepository.findById(id)
@@ -82,5 +79,13 @@ public class MemoryService {
                 .map(p -> modelMapper.map(p, PublicationDTO.class))
                 .collect(Collectors.toList());
         return new MemoryWithPublicationsDTO(modelMapper.map(memory, MemoryDTO.class), publications);
+    }
+
+    //Obtener todas los Memory credos
+    public List<MemoryDTO> getAllMemories() {
+        List<Memory> memories = memoryRepository.findAll();
+        return memories.stream()
+                .map(memory -> modelMapper.map(memory, MemoryDTO.class))
+                .collect(Collectors.toList());
     }
 }

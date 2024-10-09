@@ -95,4 +95,12 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+    //Obtener todos los Usuarios
+    public List<UserDTO> getAllUsers() {
+        List<User> users = userRepository.findAll();
+        return users.stream()
+                .map(user -> modelMapper.map(user, UserDTO.class))
+                .collect(Collectors.toList());
+    }
+
 }
