@@ -166,4 +166,12 @@ public class PublicationService {
                 .orElseThrow(() -> new RuntimeException("Publicación no encontrada"));
         return publication.getLikes().size();
     }
+
+    //obtener todas las publicaciones creadas
+    public List<PublicationDTO> getAllPublications() {
+        List<Publication> publications = publicationRepository.findAll();
+        return publications.stream()
+                .map(user -> modelMapper.map(user, PublicationDTO.class))
+                .collect(Collectors.toList());
+    }
 }

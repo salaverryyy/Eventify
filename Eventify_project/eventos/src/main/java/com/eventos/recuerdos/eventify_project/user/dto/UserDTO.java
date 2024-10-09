@@ -1,5 +1,6 @@
 package com.eventos.recuerdos.eventify_project.user.dto;
 
+import com.eventos.recuerdos.eventify_project.user.domain.User;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -11,6 +12,7 @@ public class UserDTO {
     private String email;
     private String password;
     private LocalDate userCreationDate;
+
 }
 
 //Transferir información básica de los usuarios,

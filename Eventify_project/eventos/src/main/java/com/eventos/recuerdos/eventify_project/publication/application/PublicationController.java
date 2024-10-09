@@ -40,9 +40,6 @@ public class PublicationController {
         // Llamamos al servicio para crear la publicación
         PublicationDTO createdPublication = publicationService.createPublication(memoryId, file, description, userId);
 
-
-        // Lógica del servicio
-        PublicationDTO createdPublication = publicationService.createPublication(memoryId, file, description, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdPublication);
     }
 
@@ -61,19 +58,6 @@ public class PublicationController {
         return ResponseEntity.noContent().build();
     }
 
-    //Dar "me gusta" a una publicación
-    @PostMapping("/{id}/likes")
-    public ResponseEntity<LikeDTO> likePublication(@PathVariable Long id, @RequestBody LikeDTO likeDTO) {
-        LikeDTO likedPublication = publicationService.likePublication(id, likeDTO);
-        return ResponseEntity.ok(likedPublication);
-    }
-
-    //Comentar en una publicación
-    @PostMapping("/{id}/comentarios")
-    public ResponseEntity<CommentDTO> commentOnPublication(@PathVariable Long id, @RequestBody CommentDTO commentDTO) {
-        CommentDTO createdComment = publicationService.commentOnPublication(id, commentDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdComment);
-    }
 
     //Obtener la lista de usuarios que dieron "me gusta" a una publicación
     @GetMapping("/{id}/likes")
@@ -81,12 +65,11 @@ public class PublicationController {
         List<LikeDTO> likes = publicationService.getLikesByPublication(id);
         return ResponseEntity.ok(likes);
     }
-
-    //Quitar "me gusta" de una publicación
-    @DeleteMapping("/{id}/likes")
-    public ResponseEntity<Void> removeLike(@PathVariable Long id, @RequestBody LikeDTO likeDTO) {
-        publicationService.removeLike(id, likeDTO);
-        return ResponseEntity.noContent().build();
+    //Obtener todas las publicaciones creadas
+    @GetMapping
+    public ResponseEntity<List<PublicationDTO>> getAllUsers() {
+        List<PublicationDTO> publications = publicationService.getAllPublications();
+        return ResponseEntity.ok(publications);
     }
 
 }

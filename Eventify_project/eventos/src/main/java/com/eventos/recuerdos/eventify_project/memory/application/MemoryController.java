@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/recuerdos")
 public class MemoryController {
@@ -57,5 +59,12 @@ public class MemoryController {
     public ResponseEntity<MemoryWithPublicationsDTO> getMemoryWithPublications(@PathVariable Long id) {
         MemoryWithPublicationsDTO memoryWithPublications = memoryService.getMemoryWithPublications(id);
         return ResponseEntity.ok(memoryWithPublications);
+    }
+
+    //Obtener todos los memory credos
+    @GetMapping
+    public ResponseEntity<List<MemoryDTO>> getAllMemories() {
+        List<MemoryDTO> memories = memoryService.getAllMemories();
+        return ResponseEntity.ok(memories);
     }
 }

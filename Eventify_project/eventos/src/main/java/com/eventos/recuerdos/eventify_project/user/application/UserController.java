@@ -66,6 +66,12 @@ public class UserController {
         return ResponseEntity.ok(notifications);
     }
 
+    //Obtener todos los usuarios
+    @GetMapping
+    public ResponseEntity<List<UserDTO>> getAllUsers() {
+        List<UserDTO> users = userService.getAllUsers();
+        return ResponseEntity.ok(users);
+    }
 
 
 }

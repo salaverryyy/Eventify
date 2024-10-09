@@ -8,6 +8,9 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 public class InvitationService {
 
@@ -59,6 +62,14 @@ public class InvitationService {
         Invitation invitation = invitationRepository.findByInvitationLink(token)
                 .orElseThrow(() -> new ResourceNotFoundException("Invitación no encontrada con token: " + token));
         return modelMapper.map(invitation, InvitationDTO.class);
+    }
+
+    //obtener todos las invitaciones creadas
+    public List<InvitationDTO> getAllInvitations() {
+        List<Invitation> invitations = invitationRepository.findAll();
+        return invitations.stream()
+                .map(invitation -> modelMapper.map(invitation, InvitationDTO.class))
+                .collect(Collectors.toList());
     }
 }
 

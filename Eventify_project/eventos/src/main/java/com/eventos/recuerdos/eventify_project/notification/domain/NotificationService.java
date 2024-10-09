@@ -84,5 +84,13 @@ public class NotificationService {
         notification.setStatus(Status.UNREAD);
         notificationRepository.save(notification);
     }
+
+    //Obtener todas las notificaciones
+    public List<NotificationDTO> getAllNotifications() {
+        List<Notification> notifications = notificationRepository.findAll();
+        return notifications.stream()
+                .map(notification -> modelMapper.map(notification, NotificationDTO.class))
+                .collect(Collectors.toList());
+    }
 }
 
