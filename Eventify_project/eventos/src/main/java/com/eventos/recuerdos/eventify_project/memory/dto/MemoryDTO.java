@@ -25,8 +25,6 @@ public class MemoryDTO {
     private LocalDateTime memoryCreationDate;
 
 
-    @NotNull(message = "El ID del usuario no puede estar en blanco.")
-    private Long userId;
 
 }
 

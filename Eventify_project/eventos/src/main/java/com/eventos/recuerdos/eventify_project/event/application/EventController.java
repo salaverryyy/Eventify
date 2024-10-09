@@ -59,7 +59,10 @@ public class EventController {
         return ResponseEntity.ok(invitations);
     }
 
-
-
-
+    //Obtener todos los Eventos creados
+    @GetMapping
+    public ResponseEntity<List<EventDTO>> getAllEvents() {
+        List<EventDTO> events = eventService.getAllEvents();
+        return ResponseEntity.ok(events);
+    }
 }

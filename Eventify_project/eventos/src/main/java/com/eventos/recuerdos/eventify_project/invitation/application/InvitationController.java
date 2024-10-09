@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/invitation")
 public class InvitationController {
@@ -56,6 +58,12 @@ public class InvitationController {
         return ResponseEntity.ok(invitation);
     }
 
+    //obtener todas las invitaciones creadas
+    @GetMapping
+    public ResponseEntity<List<InvitationDTO>> getAllInvitations() {
+        List<InvitationDTO> invitations = invitationService.getAllInvitations();
+        return ResponseEntity.ok(invitations);
+    }
 
 
 }

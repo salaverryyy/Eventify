@@ -1,6 +1,7 @@
 package com.eventos.recuerdos.eventify_project.like.domain;
 
 import com.eventos.recuerdos.eventify_project.exception.ResourceNotFoundException;
+import com.eventos.recuerdos.eventify_project.like.dto.LikeDTO;
 import com.eventos.recuerdos.eventify_project.like.infrastructure.LikeRepository;
 import com.eventos.recuerdos.eventify_project.publication.domain.Publication;
 import com.eventos.recuerdos.eventify_project.publication.infrastructure.PublicationRepository;
@@ -62,5 +63,13 @@ public class LikeService {
                 .orElseThrow(() -> new ResourceNotFoundException("El usuario no ha dado 'me gusta' a esta publicación."));
 
         likeRepository.delete(like);
+    }
+
+    //obtener todos los likes dados
+    public List<LikeDTO> getAllLikes() {
+        List<Like> likes = likeRepository.findAll();
+        return likes.stream()
+                .map(like -> modelMapper.map(like, LikeDTO.class))
+                .collect(Collectors.toList());
     }
 }

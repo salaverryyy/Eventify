@@ -1,6 +1,7 @@
 package com.eventos.recuerdos.eventify_project.like.application;
 
 import com.eventos.recuerdos.eventify_project.like.domain.LikeService;
+import com.eventos.recuerdos.eventify_project.like.dto.LikeDTO;
 import com.eventos.recuerdos.eventify_project.user.dto.UserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -34,5 +35,12 @@ public class LikeController {
     public ResponseEntity<?> unlikePublication(@PathVariable Long id, @RequestParam Long userId) {
         likeService.unlikePublication(id, userId);
         return ResponseEntity.noContent().build();
+    }
+
+    //obtener todos los likes dados
+    @GetMapping
+    public ResponseEntity<List<LikeDTO>> getAllLikes() {
+        List<LikeDTO> likes = likeService.getAllLikes();
+        return ResponseEntity.ok(likes);
     }
 }
