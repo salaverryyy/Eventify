@@ -11,6 +11,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -51,12 +52,16 @@ public class CommentService {
         comment.setPublication(publication); // Asociar con la publicación
         comment.setUser(user); // Asociar con el usuario
 
+        // Asignar la fecha de creación
+        comment.setCommentDate(LocalDateTime.now());
+
         // Guardar el comentario
         comment = commentRepository.save(comment);
 
         // Retornar el DTO del comentario creado
         return modelMapper.map(comment, CommentDTO.class);
     }
+
 
     // Actualizar un comentario por ID
     public CommentDTO updateComment(Long id, CommentDTO commentDTO) {
