@@ -2,8 +2,11 @@ package com.eventos.recuerdos.eventify_project.event.application;
 
 import com.eventos.recuerdos.eventify_project.event.domain.EventService;
 import com.eventos.recuerdos.eventify_project.event.dto.EventDTO;
+import com.eventos.recuerdos.eventify_project.invitation.domain.InvitationService;
 import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationDTO;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
+import com.eventos.recuerdos.eventify_project.user.dto.EventGuestDTO;
+import com.eventos.recuerdos.eventify_project.user.dto.UserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +19,10 @@ import java.util.List;
 public class EventController {
     @Autowired
     EventService eventService;
+
+    @Autowired
+    InvitationService invitationService;
+
 
     //Obtener los detalles de un evento
     @GetMapping("/{id}")
@@ -53,11 +60,10 @@ public class EventController {
     }
 
 
-    //Obtener la lista de invitados del evento
-    @GetMapping("/{id}/invitados")
-    public ResponseEntity<List<InvitationDTO>> getEventInvitations(@PathVariable Long id) {
-        List<InvitationDTO> invitations = eventService.getEventInvitations(id);
-        return ResponseEntity.ok(invitations);
+    // Obtener lista de usuarios invitados a un evento
+    @GetMapping("/{eventId}/invitados")
+    public List<EventGuestDTO> getEventGuests(@PathVariable Long eventId) {
+        return eventService.getEventGuests(eventId);
     }
 
     // Endpoint para asociar un Memory a un Event
