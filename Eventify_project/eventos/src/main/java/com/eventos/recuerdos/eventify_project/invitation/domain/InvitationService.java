@@ -1,5 +1,7 @@
 package com.eventos.recuerdos.eventify_project.invitation.domain;
 
+import com.eventos.recuerdos.eventify_project.event.domain.Event;
+import com.eventos.recuerdos.eventify_project.event.infrastructure.EventRepository;
 import com.eventos.recuerdos.eventify_project.exception.ResourceNotFoundException;
 import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationByLinkDTO;
 import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationByQrDTO;
@@ -24,6 +26,9 @@ public class InvitationService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private EventRepository eventRepository;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -59,55 +64,65 @@ public class InvitationService {
     }
 
     public InvitationDTO sendInvitationByQr(InvitationByQrDTO invitationByQrDTO) {
-        // Obtener el usuario por su ID
-        User user = userRepository.findById(invitationByQrDTO.getUserId())
+        // Obtener el usuario que envía la invitación
+        User userInvitador = userRepository.findById(invitationByQrDTO.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + invitationByQrDTO.getUserId()));
 
-        // Crear la entidad Invitation
+        // Obtener el evento por su ID
+        Event event = eventRepository.findById(invitationByQrDTO.getEventId())
+                .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado con id: " + invitationByQrDTO.getEventId()));
+
+        // Crear la invitación
         Invitation invitation = new Invitation();
-        invitation.setUsuarioInvitador(user); // Asociar la invitación con el usuario
+        invitation.setUsuarioInvitador(userInvitador);
         invitation.setQrCode(invitationByQrDTO.getQrCode());
         invitation.setGuestEmail(invitationByQrDTO.getGuestEmail());
         invitation.setStatus("PENDING");
+        invitation.setEvent(event);
 
-        // Guardar la invitación en la base de datos
+        // Verificar si el usuario invitado ya está registrado
+        if (invitationByQrDTO.getInvitedUserId() != null) {
+            User invitedUser = userRepository.findById(invitationByQrDTO.getInvitedUserId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Usuario invitado no encontrado con id: " + invitationByQrDTO.getInvitedUserId()));
+            invitation.setUsuarioInvitado(invitedUser);  // Asociar el usuario invitado
+        }
+
+        // Guardar la invitación
         invitation = invitationRepository.save(invitation);
 
-        // Imprimir el userId para verificar
-        System.out.println("User ID al guardar: " + user.getId());
-
-        // Crear y devolver el DTO con el userId incluido
+        // Mapear a DTO y retornar
         InvitationDTO resultDTO = modelMapper.map(invitation, InvitationDTO.class);
-        resultDTO.setUserId(user.getId());  // Asignar el userId manualmente en el DTO
-
+        resultDTO.setUserId(userInvitador.getId());
         return resultDTO;
     }
 
 
 
+
     // Enviar una invitación por enlace (token)
-    public InvitationDTO sendInvitationByLink(InvitationByLinkDTO InvitationByLinkDTO) {
+    public InvitationDTO sendInvitationByLink(InvitationByLinkDTO invitationByLinkDTO) {
         // Obtener el usuario por su ID
-        User user = userRepository.findById(InvitationByLinkDTO.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + InvitationByLinkDTO.getUserId()));
+        User user = userRepository.findById(invitationByLinkDTO.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + invitationByLinkDTO.getUserId()));
 
-        // Crear una nueva invitación
+        // Obtener el evento por su ID
+        Event event = eventRepository.findById(invitationByLinkDTO.getEventId())
+                .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado con id: " + invitationByLinkDTO.getEventId()));
+
+        // Crear la invitación
         Invitation invitation = new Invitation();
-        invitation.setGuestEmail(InvitationByLinkDTO.getGuestEmail());
-        invitation.setStatus("PENDING");
         invitation.setUsuarioInvitador(user);
-
-        // En lugar de guardar la URL completa, solo guardamos el token
-        String token = InvitationByLinkDTO.getInvitationLink(); // Esto sería el token, por ejemplo "abc123"
-        invitation.setInvitationLink(token);
+        invitation.setInvitationLink(invitationByLinkDTO.getInvitationLink());
+        invitation.setGuestEmail(invitationByLinkDTO.getGuestEmail());
+        invitation.setStatus("PENDING");
+        invitation.setEvent(event); // Asociar la invitación con el evento
 
         // Guardar la invitación
         invitation = invitationRepository.save(invitation);
 
-        // Mapear a DTO y devolver la invitación creada
+        // Mapear a DTO
         InvitationDTO resultDTO = modelMapper.map(invitation, InvitationDTO.class);
         resultDTO.setUserId(user.getId());
-
         return resultDTO;
     }
 

@@ -42,14 +42,15 @@ public class InvitationController {
         return ResponseEntity.ok("Invitación rechazada.");
     }
 
-    // Enviar una invitación por QR
+    // Enviar invitación por QR
     @PostMapping("/sendByQr")
     public ResponseEntity<InvitationDTO> sendInvitationByQr(@RequestBody InvitationByQrDTO invitationByQrDTO) {
         InvitationDTO createdInvitation = invitationService.sendInvitationByQr(invitationByQrDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdInvitation);
     }
 
-    // Enviar una invitación por enlace
+
+    // Enviar invitación por Link
     @PostMapping("/sendByLink")
     public ResponseEntity<InvitationDTO> sendInvitationByLink(@RequestBody InvitationByLinkDTO invitationByLinkDTO) {
         InvitationDTO createdInvitation = invitationService.sendInvitationByLink(invitationByLinkDTO);

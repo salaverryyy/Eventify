@@ -88,9 +88,16 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
 
         return user.getInvitations().stream()
-                .map(invitation -> modelMapper.map(invitation, InvitationDTO.class))
+                .map(invitation -> {
+                    // Mapeo de la entidad a DTO
+                    InvitationDTO invitationDTO = modelMapper.map(invitation, InvitationDTO.class);
+                    // Asignación manual del userId
+                    invitationDTO.setUserId(user.getId());
+                    return invitationDTO;
+                })
                 .collect(Collectors.toList());
     }
+
 
 
     //Obtener todas las notificaciones de un usuario.

@@ -8,27 +8,30 @@ import lombok.Data;
 
 @Entity
 @Data
-@Table(uniqueConstraints = {@UniqueConstraint(columnNames = "qrCode")})
 public class Invitation {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Column(unique = true)
-    private String qrCode; // Código QR único
-
+    private String qrCode;
     private String invitationLink;
     private String guestEmail;
     private String status;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private User usuarioInvitador;
+    private User usuarioInvitador;  // Quien envía la invitación
 
     @ManyToOne
-    private Memory memory;
+    @JoinColumn(name = "invited_user_id", nullable = true)  // Usuario invitado (opcional si no está registrado)
+    private User usuarioInvitado;   // Usuario invitado
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id")
     private Event event;
+
+    // Agregar la relación con Memory
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "memory_id")
+    private Memory memory;  // Relación con Memory
 }

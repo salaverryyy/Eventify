@@ -4,10 +4,13 @@ import com.eventos.recuerdos.eventify_project.event.dto.EventDTO;
 import com.eventos.recuerdos.eventify_project.event.infrastructure.EventRepository;
 import com.eventos.recuerdos.eventify_project.exception.ResourceNotFoundException;
 import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationDTO;
+import com.eventos.recuerdos.eventify_project.invitation.domain.Invitation;
 import com.eventos.recuerdos.eventify_project.memory.domain.Memory;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
 import com.eventos.recuerdos.eventify_project.memory.infrastructure.MemoryRepository;
 import com.eventos.recuerdos.eventify_project.user.domain.User;
+import com.eventos.recuerdos.eventify_project.user.dto.EventGuestDTO;
+import com.eventos.recuerdos.eventify_project.user.dto.UserDTO;
 import com.eventos.recuerdos.eventify_project.user.infrastructure.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,13 +97,18 @@ public class EventService {
 
 
     // Obtener lista de invitados del evento
-    public List<InvitationDTO> getEventInvitations(Long id) {
-        Event event = eventRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado con id: " + id));
+    public List<EventGuestDTO> getEventGuests(Long eventId) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new RuntimeException("Evento no encontrado con id: " + eventId));
+
+        // Obtener las invitaciones del evento y los usuarios invitados
         return event.getInvitations().stream()
-                .map(invitation -> modelMapper.map(invitation, InvitationDTO.class))
+                .map(Invitation::getUsuarioInvitado)
+                .filter(user -> user != null) // Asegurarse de que no haya invitados nulos
+                .map(user -> modelMapper.map(user, EventGuestDTO.class))
                 .collect(Collectors.toList());
     }
+
 
     // Método para agregar un Memory a un Event
     public EventDTO addMemoryToEvent(Long eventId, Long memoryId) {
