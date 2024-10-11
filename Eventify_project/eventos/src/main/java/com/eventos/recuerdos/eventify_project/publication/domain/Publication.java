@@ -43,6 +43,10 @@ public class Publication {
     @Column(nullable = false)
     private LocalDateTime publicationDate;  // Fecha y hora de la publicación
 
+
+    @Column(name = "like_count", nullable = false, columnDefinition = "integer default 0")
+    private int likeCount = 0;
+
     // Relación One-to-Many con Likes
     @OneToMany(mappedBy = "publication", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<PublicationLike> publicationLikes = new ArrayList<>();  // Lista de likes recibidos
