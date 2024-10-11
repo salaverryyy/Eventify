@@ -10,6 +10,9 @@ import com.eventos.recuerdos.eventify_project.user.dto.UserDTO;
 import com.eventos.recuerdos.eventify_project.user.infrastructure.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,18 +30,35 @@ public class LikeService {
     private ModelMapper modelMapper;
 
     // Dar "me gusta" a una publicación
-    public void likePublication(Long publicationId, Long userId) {
+    public void likePublication(Long publicationId) {
+        // Buscar la publicación por su ID
         Publication publication = publicationRepository.findById(publicationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Publicación no encontrada con id: " + publicationId));
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + userId));
+        // Obtener el usuario autenticado desde el SecurityContext
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new IllegalStateException("Usuario no autenticado");
+        }
 
+        // Obtener los detalles del usuario autenticado
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        String username = userDetails.getUsername();
+
+        // Buscar al usuario en la base de datos usando el username
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con username: " + username));
+
+        // Crear una instancia de PublicationLike y guardarla
         PublicationLike publicationLike = new PublicationLike();
         publicationLike.setPublication(publication);
         publicationLike.setUser(user);
+
+        // Guardar el like en la base de datos
         likeRepository.save(publicationLike);
     }
+
+
 
     // Obtener la lista de usuarios que han dado "me gusta" a una publicación
     public List<UserDTO> getUsersWhoLikedPublication(Long publicationId) {
@@ -62,8 +82,12 @@ public class LikeService {
         PublicationLike publicationLike = likeRepository.findByPublicationAndUser(publication, user)
                 .orElseThrow(() -> new ResourceNotFoundException("El usuario no ha dado 'me gusta' a esta publicación."));
 
+        // Quitar el like y reducir el contador
         likeRepository.delete(publicationLike);
+        publication.setLikeCount(publication.getLikeCount() - 1);
+        publicationRepository.save(publication);  // Actualizar la publicación
     }
+
 
     //obtener todos los likes dados
     public List<LikeDTO> getAllLikes() {

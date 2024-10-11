@@ -17,10 +17,10 @@ public class LikeController {
     private LikeService likeService;
 
     // Dar "me gusta" a una publicación
-    @PostMapping("/{id}/likes")
-    public ResponseEntity<?> likePublication(@PathVariable Long id, @RequestParam Long userId) {
-        likeService.likePublication(id, userId);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+    @PostMapping("/{publicationId}/like")
+    public ResponseEntity<String> likePublication(@PathVariable Long publicationId) {
+        likeService.likePublication(publicationId);
+        return ResponseEntity.ok("Like agregado exitosamente.");
     }
 
     // Obtener la lista de usuarios que han dado "me gusta" a una publicación
