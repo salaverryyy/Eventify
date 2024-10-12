@@ -34,7 +34,8 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // Filtro JWT
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/public/**", "/usuarios/crearUsuario").permitAll() // Endpoints públicos
+                        .requestMatchers("/public/**", "/usuarios/crearUsuario",
+                                "/usuarios", "/usuarios/login").permitAll() // Endpoints públicos
                         .anyRequest().authenticated() // Otros requieren autenticación
                 );
 

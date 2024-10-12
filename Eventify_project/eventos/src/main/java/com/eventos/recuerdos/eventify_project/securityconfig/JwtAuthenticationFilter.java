@@ -6,6 +6,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,7 +25,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final UserService userService;
 
     @Autowired
-    public JwtAuthenticationFilter(JwtService jwtService, UserService userService) {
+    public JwtAuthenticationFilter(@Lazy JwtService jwtService ,@Lazy UserService userService) {
         this.jwtService = jwtService;
         this.userService = userService;
     }
@@ -43,14 +44,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         jwt = authHeader.substring(7);
 
         try {
-            userEmail = jwtService.extractUsername(jwt);  // Extraer solo el email o nombre de usuario
+            userEmail = jwtService.extractUsername(jwt);  // Extraer email o nombre de usuario
 
             if (StringUtils.hasText(userEmail) && SecurityContextHolder.getContext().getAuthentication() == null) {
-                jwtService.validateToken(jwt, userEmail);  // Validar token
+                // Cargar el UserDetails usando el email extraído
+                UserDetails userDetails = userService.loadUserByUsername(userEmail);
 
-                UserDetails userDetails = userService.loadUserByUsername(userEmail);  // Cambio aquí
+                // Validar el token pasando el JWT y el UserDetails
+                jwtService.validateToken(jwt, userDetails);
 
-                // Crear el token de autenticación sin roles
+                // Crear el token de autenticación
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
 
@@ -67,4 +70,5 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         filterChain.doFilter(servletRequest, servletResponse);
     }
+
 }

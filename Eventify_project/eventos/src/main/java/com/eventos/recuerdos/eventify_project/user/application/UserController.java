@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/usuarios")
@@ -41,29 +42,38 @@ public class UserController {
         return ResponseEntity.ok(updatedUser); // Retorna 200 OK con el cuerpo del usuario actualizado
     }
 
-
+    //Eliminar usuario
     @DeleteMapping("/{id}")
     public ResponseEntity<?>deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
-
+    //obtener los albums donde participa el usuario
     @GetMapping("/{id}/recuerdos")
     public ResponseEntity<List<MemoryDTO>> getUserMemories(@PathVariable Long id) {
         List<MemoryDTO> memories = userService.getUserMemories(id);
         return ResponseEntity.ok(memories);
     }
 
+    //obtener las invitaciones de un usuario en especifico
     @GetMapping("/{id}/invitaciones")
     public ResponseEntity<List<InvitationDTO>> getUserInvitations(@PathVariable Long id) {
         List<InvitationDTO> invitations = userService.getUserInvitations(id);
         return ResponseEntity.ok(invitations);
     }
 
+    //obtener las notificaciones de un usuario en especifico
     @GetMapping("/{id}/notificaciones")
     public ResponseEntity<List<NotificationDTO>> getUserNotifications(@PathVariable Long id) {
         List<NotificationDTO> notifications = userService.getUserNotifications(id);
         return ResponseEntity.ok(notifications);
+    }
+
+    // Endpoint para login y generación del token JWT
+    @PostMapping("/login")
+    public ResponseEntity<Map<String, String>> login(@RequestBody UserDTO userDTO) {
+        String token = userService.login(userDTO);
+        return ResponseEntity.ok(Map.of("token", token));
     }
 
     //Obtener todos los usuarios
