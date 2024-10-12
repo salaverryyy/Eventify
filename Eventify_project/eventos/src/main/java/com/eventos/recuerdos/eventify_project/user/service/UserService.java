@@ -1,16 +1,21 @@
-package com.eventos.recuerdos.eventify_project.user.domain;
+package com.eventos.recuerdos.eventify_project.user.service;
 
 import com.eventos.recuerdos.eventify_project.exception.ResourceNotFoundException;
 import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationDTO;
-import com.eventos.recuerdos.eventify_project.invitation.infrastructure.InvitationRepository;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
 import com.eventos.recuerdos.eventify_project.notification.dto.NotificationDTO;
 import com.eventos.recuerdos.eventify_project.publication.domain.Publication;
 import com.eventos.recuerdos.eventify_project.publication.infrastructure.PublicationRepository;
+import com.eventos.recuerdos.eventify_project.user.domain.User;
 import com.eventos.recuerdos.eventify_project.user.dto.UserDTO;
 import com.eventos.recuerdos.eventify_project.user.infrastructure.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -26,6 +31,10 @@ public class UserService {
 
     @Autowired
     private PublicationRepository publicationRepository;
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
+
 
     @Autowired
     private ModelMapper modelMapper;
@@ -70,6 +79,7 @@ public class UserService {
         // Luego eliminar al usuario
         userRepository.deleteById(id);
     }
+
 
 
     //Obtener todos los recuerdos creados por el usuario

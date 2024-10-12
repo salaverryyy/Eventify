@@ -9,7 +9,6 @@ import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationDTO;
 import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationStatusDTO;
 import com.eventos.recuerdos.eventify_project.invitation.infrastructure.InvitationRepository;
 import com.eventos.recuerdos.eventify_project.user.domain.User;
-import com.eventos.recuerdos.eventify_project.user.domain.UserService;
 import com.eventos.recuerdos.eventify_project.user.infrastructure.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;

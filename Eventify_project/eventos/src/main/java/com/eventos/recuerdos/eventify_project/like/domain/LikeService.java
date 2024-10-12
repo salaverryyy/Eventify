@@ -30,6 +30,7 @@ public class LikeService {
     private ModelMapper modelMapper;
 
     // Dar "me gusta" a una publicación
+
     public void likePublication(Long publicationId) {
         // Buscar la publicación por su ID
         Publication publication = publicationRepository.findById(publicationId)
@@ -57,6 +58,7 @@ public class LikeService {
         // Guardar el like en la base de datos
         likeRepository.save(publicationLike);
     }
+
 
 
 

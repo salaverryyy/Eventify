@@ -3,12 +3,11 @@ package com.eventos.recuerdos.eventify_project.user.application;
 import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationDTO;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
 import com.eventos.recuerdos.eventify_project.notification.dto.NotificationDTO;
-import com.eventos.recuerdos.eventify_project.user.domain.UserService;
+import com.eventos.recuerdos.eventify_project.user.service.UserService;
 import com.eventos.recuerdos.eventify_project.user.dto.UserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
