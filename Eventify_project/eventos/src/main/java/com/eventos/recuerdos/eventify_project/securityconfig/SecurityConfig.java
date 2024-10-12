@@ -7,6 +7,8 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
@@ -17,12 +19,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                )
+                .csrf(csrf -> csrf.disable()) // Deshabilita CSRF temporalmente para probar el endpoint
                 .authorizeHttpRequests(auth -> auth
-                        // Aquí defines los endpoints que no requieren autenticación
-                        .requestMatchers("/public/**", "/usuarios", "/publication","notification","/memories","/likePublication","/invitation","/event","/comment").permitAll()
+                        // Definir los endpoints que no requieren autenticación
+                        .requestMatchers("/public/**").permitAll()
+                        .requestMatchers("/usuarios", "/usuarios/crearUsuario").permitAll()
+
                         .anyRequest().authenticated()  // Los demás endpoints requieren autenticación
                 )
                 .httpBasic(Customizer.withDefaults());  // Mantener autenticación básica (considerar migrar a JWT en el futuro)
@@ -30,10 +32,14 @@ public class SecurityConfig {
         return http.build();
     }
 
-
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 }
 
