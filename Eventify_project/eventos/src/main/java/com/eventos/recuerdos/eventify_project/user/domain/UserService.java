@@ -11,15 +11,20 @@ import com.eventos.recuerdos.eventify_project.user.dto.UserDTO;
 import com.eventos.recuerdos.eventify_project.user.infrastructure.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class UserService {
+public class UserService implements UserDetailsService {
 
     @Autowired
     private UserRepository userRepository;
@@ -28,8 +33,23 @@ public class UserService {
     private PublicationRepository publicationRepository;
 
     @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
     private ModelMapper modelMapper;
 
+
+    // Implementación del método de UserDetailsService
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con el nombre: " + username));
+        return new org.springframework.security.core.userdetails.User(
+                user.getUsername(),
+                user.getPassword(),
+                new ArrayList<>()
+        );
+    }
     //metodos
     //obtener usuario por Id
     public UserDTO getUserById(Long id) {
@@ -40,9 +60,19 @@ public class UserService {
 
     //crear nuevo usuario
     public UserDTO createUser(UserDTO userDTO) {
+        // Convertir el DTO en entidad
         User user = modelMapper.map(userDTO, User.class);
-        user.setUserCreationDate(LocalDate.now()); // Establece la fecha de creación
+
+        // Establecer la fecha de creación
+        user.setUserCreationDate(LocalDate.now());
+
+        // Encriptar la contraseña antes de guardarla
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+        // Guardar el usuario en la base de datos
         User savedUser = userRepository.save(user);
+
+        // Convertir la entidad guardada nuevamente en DTO y devolverla
         return modelMapper.map(savedUser, UserDTO.class);
     }
 
