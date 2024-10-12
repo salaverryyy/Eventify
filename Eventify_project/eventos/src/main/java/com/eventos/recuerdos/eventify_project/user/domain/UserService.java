@@ -7,16 +7,20 @@ import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
 import com.eventos.recuerdos.eventify_project.notification.dto.NotificationDTO;
 import com.eventos.recuerdos.eventify_project.publication.domain.Publication;
 import com.eventos.recuerdos.eventify_project.publication.infrastructure.PublicationRepository;
+import com.eventos.recuerdos.eventify_project.securityconfig.JwtService;
 import com.eventos.recuerdos.eventify_project.user.dto.UserDTO;
 import com.eventos.recuerdos.eventify_project.user.infrastructure.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,8 +30,7 @@ import java.util.stream.Collectors;
 @Service
 public class UserService implements UserDetailsService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     @Autowired
     private PublicationRepository publicationRepository;
@@ -38,6 +41,18 @@ public class UserService implements UserDetailsService {
     @Autowired
     private ModelMapper modelMapper;
 
+
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
+
+    // Constructor para inyectar las dependencias
+    public UserService(UserRepository userRepository,
+                       AuthenticationManager authenticationManager,
+                       JwtService jwtService) {
+        this.userRepository = userRepository;
+        this.authenticationManager = authenticationManager;
+        this.jwtService = jwtService;
+    }
 
     // Implementación del método de UserDetailsService
     @Override
@@ -138,6 +153,18 @@ public class UserService implements UserDetailsService {
                 .collect(Collectors.toList());
     }
 
+    // Lógica de login: autentica y genera token JWT
+    public String login(UserDTO userDTO) {
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(userDTO.getUsername(), userDTO.getPassword())
+            );
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            return jwtService.generateToken(userDetails);  // Genera el token JWT
+        } catch (AuthenticationException e) {
+            throw new UsernameNotFoundException("Credenciales inválidas");
+        }
+    }
     //Obtener todos los Usuarios
     public List<UserDTO> getAllUsers() {
         List<User> users = userRepository.findAll();
