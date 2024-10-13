@@ -5,33 +5,47 @@ import com.eventos.recuerdos.eventify_project.memory.domain.Memory;
 import com.eventos.recuerdos.eventify_project.user.domain.User;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Data
+@Table(name = "invitations", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"event_id", "invited_user_id"})
+})
 public class Invitation {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    private String qrCode;
-    private String invitationLink;
-    private String guestEmail;
-    private String status;
+    private String qrCode;  // Código QR para la invitación
+    private String invitationLink;  // Enlace de invitación
+    private String guestEmail;  // Correo del invitado (para invitados no registrados)
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User usuarioInvitador;  // Quien envía la invitación
+    @Enumerated(EnumType.STRING)
+    private InvitationStatus status;  // Estado de la invitación
 
-    @ManyToOne
-    @JoinColumn(name = "invited_user_id", nullable = true)  // Usuario invitado (opcional si no está registrado)
-    private User usuarioInvitado;   // Usuario invitado
-
+    // Relación con el usuario que envía la invitación
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "event_id")
+    @JoinColumn(name = "user_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private User usuarioInvitador;
+
+    // Relación con el usuario invitado (opcional)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "invited_user_id", nullable = true)
+    private User usuarioInvitado;
+
+    // Relación con un evento
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "event_id", nullable = true)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Event event;
 
-    // Agregar la relación con Memory
+    // Relación con un recuerdo (Memory)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "memory_id")
-    private Memory memory;  // Relación con Memory
+    @JoinColumn(name = "memory_id", nullable = true)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private Memory memory;
 }

@@ -12,5 +12,5 @@ import java.util.List;
 public interface PublicationRepository extends JpaRepository<Publication, Long> {
     Collection<Object> findByMemoryId(Long id);
     // Método para encontrar publicaciones por el ID del usuario
-    List<Publication> findByUserId(Long userId);
+    List<Publication> findByAuthor_Id(Long authorId);  // Ajustado al campo 'author'
 }

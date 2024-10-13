@@ -5,6 +5,8 @@ import com.eventos.recuerdos.eventify_project.memory.domain.Memory;
 import com.eventos.recuerdos.eventify_project.user.domain.User;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -22,15 +24,18 @@ public class Event {
     private String eventDescription;
     private LocalDate eventDate;
 
+    // Usuario organizador del evento
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "organizer_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private User organizer;  // Asegúrate de usar 'organizer' en el repositorio
+
     // Relación One-to-One con Memory
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "memory_id", unique = true)  // Añade 'unique = true' para garantizar que solo un Event esté relacionado con un Memory
-    private Memory memory;  // Ahora un Event solo puede tener un Memory asociado.
+    @JoinColumn(name = "memory_id", unique = true)
+    private Memory memory;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "organizer_id")
-    private User organizer; // Usuario que organizó el evento
-
-    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Invitation> invitations = new ArrayList<>(); // Lista de invitaciones del evento
+    // Lista de invitaciones del evento
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<Invitation> invitations = new ArrayList<>();
 }

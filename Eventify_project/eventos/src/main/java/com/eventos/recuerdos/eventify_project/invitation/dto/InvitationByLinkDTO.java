@@ -5,8 +5,7 @@ import lombok.Data;
 @Data
 public class InvitationByLinkDTO {
     private Long userId;
-    private String guestEmail;
+    private Long eventId;
     private String invitationLink;
-    private Long eventId;// el token o enlace de la invitación
-    private Long invitedUserId;
+    private String guestEmail;
 }
