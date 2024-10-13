@@ -48,12 +48,6 @@ public class UserController {
         return ResponseEntity.ok(userDTO); // Retorna 200 OK con el cuerpo del usuario
     }
 
-    // Crear un nuevo usuario
-    @PostMapping("/crearUsuario")
-    public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO userDTO) {
-        UserDTO createdUser = userService.createUser(userDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdUser); // Retorna 201 Created con el cuerpo del nuevo usuario
-    }
 
     // Actualizar un usuario
     @PutMapping("/{id}")

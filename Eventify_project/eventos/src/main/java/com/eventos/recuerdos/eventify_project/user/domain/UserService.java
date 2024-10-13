@@ -48,14 +48,6 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + id));
     }
 
-    // Crear nuevo usuario
-    public UserDTO createUser(UserDTO userDTO) {
-        User user = modelMapper.map(userDTO, User.class);
-        user.setUserCreationDate(LocalDate.now());
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        User savedUser = userRepository.save(user);
-        return modelMapper.map(savedUser, UserDTO.class);
-    }
 
     // Actualizar usuario
     public UserDTO updateUser(Long id, UserDTO userDTO) {
