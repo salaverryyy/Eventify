@@ -8,6 +8,7 @@ import com.eventos.recuerdos.eventify_project.user.infrastructure.UserRepository
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -37,14 +38,24 @@ public class AuthenticationService {
         return response;
     }
 
-    public JwtAuthenticationResponse signin(SigninRequest request) throws IllegalArgumentException {
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
-        var user = userRepository.findByEmail(request.getEmail());
+    public JwtAuthenticationResponse login(SigninRequest request) throws IllegalArgumentException {
+        // Autenticación del usuario usando email y contraseña
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+        );
+
+        // Obtener el usuario de la base de datos
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con email: " + request.getEmail()));
+
+        // Generar el token JWT
         var jwt = jwtService.generateToken(user);
 
+        // Crear y devolver la respuesta con el token JWT
         JwtAuthenticationResponse response = new JwtAuthenticationResponse();
         response.setToken(jwt);
 
         return response;
     }
+
 }

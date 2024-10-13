@@ -10,12 +10,14 @@ import com.eventos.recuerdos.eventify_project.user.infrastructure.UserRepository
 @Component
 public class UserDetailsServiceImpl implements UserDetailsService {
     @Autowired
-    UserRepository repository;
+    private UserRepository userRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return repository.findByEmail(username);
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con email: " + email));
     }
+
 
     public UserDetailsService userDetailsService() {
         return this;
