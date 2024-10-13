@@ -5,6 +5,7 @@ import com.eventos.recuerdos.eventify_project.Email.EmailService;
 import com.eventos.recuerdos.eventify_project.notification.domain.NotificationService;
 import com.eventos.recuerdos.eventify_project.notification.domain.NotificationType;
 import com.eventos.recuerdos.eventify_project.notification.dto.NotificationDTO;
+import com.eventos.recuerdos.eventify_project.notification.dto.NotificationRequestDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +22,7 @@ public class NotificationController {
 
     //Enviar una notificación via correo
     @PostMapping("/send-notification")
-    public String sendNotification(@RequestBody NotificationRequest request) {
+    public String sendNotification(@RequestBody NotificationRequestDto request) {
         emailService.sendEmail(request.getEmail(), request.getSubject(), request.getBody());
         return "Notification sent successfully!";
     }
