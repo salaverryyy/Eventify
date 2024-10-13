@@ -3,14 +3,17 @@ package com.eventos.recuerdos.eventify_project.user.application;
 import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationDTO;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
 import com.eventos.recuerdos.eventify_project.notification.dto.NotificationDTO;
+import com.eventos.recuerdos.eventify_project.user.domain.User;
 import com.eventos.recuerdos.eventify_project.user.domain.UserService;
 import com.eventos.recuerdos.eventify_project.user.dto.UserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +23,23 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @GetMapping("/profile")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<String> userProfile(Principal principal) {
+        return ResponseEntity.ok("Perfil de: " + principal.getName());
+    }
+
+
+    //busqueda de usuarios
+    @GetMapping("/search")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    public ResponseEntity<List<User>> searchUsers(@RequestParam String username) {
+        List<User> users = userService.searchByUsername(username);
+        return ResponseEntity.ok(users);
+    }
+
+
 
     // Obtener usuario por ID
     @GetMapping("/{id}")
@@ -43,7 +63,7 @@ public class UserController {
     }
 
     //Eliminar usuario
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id}/delete")
     public ResponseEntity<?>deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
@@ -68,20 +88,5 @@ public class UserController {
         List<NotificationDTO> notifications = userService.getUserNotifications(id);
         return ResponseEntity.ok(notifications);
     }
-
-    // Endpoint para login y generación del token JWT
-    @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login(@RequestBody UserDTO userDTO) {
-        String token = userService.login(userDTO);
-        return ResponseEntity.ok(Map.of("token", token));
-    }
-
-    //Obtener todos los usuarios
-    @GetMapping
-    public ResponseEntity<List<UserDTO>> getAllUsers() {
-        List<UserDTO> users = userService.getAllUsers();
-        return ResponseEntity.ok(users);
-    }
-
 
 }

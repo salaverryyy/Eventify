@@ -19,24 +19,26 @@ public class Memory {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @Column(nullable = false)
     private String memoryName; // Nombre del recuerdo (álbum virtual)
+
     private String description; // Descripción del recuerdo
     private LocalDateTime memoryCreationDate; // Fecha de creación del recuerdo
 
     // Relación Many-to-One con User (usuario creador del recuerdo)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     // Relación One-to-Many con publicaciones
     @OneToMany(mappedBy = "memory", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<Publication> publications = new ArrayList<>(); // Lista de publicaciones asociadas al recuerdo
+    private List<Publication> publications = new ArrayList<>();
 
     // Relación One-to-Many con invitaciones
-    @OneToMany(mappedBy = "memory", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Invitation> invitations = new ArrayList<>(); // Lista de invitaciones del recuerdo
+    @OneToMany(mappedBy = "memory", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<Invitation> invitations = new ArrayList<>();
 
     // Relación One-to-One con Event
-    @OneToOne(mappedBy = "memory", fetch = FetchType.LAZY)
-    private Event event; // Relación One-to-One con Event
+    @OneToOne(mappedBy = "memory", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private Event event;
 }

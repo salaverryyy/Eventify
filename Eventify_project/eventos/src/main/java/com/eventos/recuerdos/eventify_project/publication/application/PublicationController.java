@@ -73,11 +73,6 @@ public class PublicationController {
         List<LikeDTO> likes = publicationService.getLikesByPublication(id);
         return ResponseEntity.ok(likes);
     }
-    //Obtener todas las publicaciones creadas
-    @GetMapping
-    public ResponseEntity<List<PublicationDTO>> getAllUsers() {
-        List<PublicationDTO> publications = publicationService.getAllPublications();
-        return ResponseEntity.ok(publications);
-    }
+
 
 }

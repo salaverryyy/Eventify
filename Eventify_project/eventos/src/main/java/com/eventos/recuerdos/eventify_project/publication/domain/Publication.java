@@ -16,18 +16,19 @@ import java.util.List;
 @Entity
 @Data
 public class Publication {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;  // Identificador único de la publicación
 
-    // Relación Many-to-One con el Usuario que hizo la publicación
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    // Relación Many-to-One con el Usuario (autor de la publicación)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "author_id", nullable = false)  // Cambiado para coincidir con 'author'
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private User user;  // Usuario que hace la publicación
+    private User author;  // Usuario que hizo la publicación
 
     // Relación Many-to-One con Memory (recuerdo)
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "memory_id", nullable = false)
     private Memory memory;  // Recuerdo al que pertenece la publicación
 
@@ -43,15 +44,14 @@ public class Publication {
     @Column(nullable = false)
     private LocalDateTime publicationDate;  // Fecha y hora de la publicación
 
-
     @Column(name = "like_count", nullable = false, columnDefinition = "integer default 0")
-    private int likeCount = 0;
+    private int likeCount = 0;  // Contador de likes
 
     // Relación One-to-Many con Likes
     @OneToMany(mappedBy = "publication", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<PublicationLike> publicationLikes = new ArrayList<>();  // Lista de likes recibidos
+    private List<PublicationLike> publicationLikes = new ArrayList<>();
 
     // Relación One-to-Many con Comentarios
     @OneToMany(mappedBy = "publication", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<Comment> comments = new ArrayList<>();  // Lista de comentarios en la publicación
+    private List<Comment> comments = new ArrayList<>();
 }

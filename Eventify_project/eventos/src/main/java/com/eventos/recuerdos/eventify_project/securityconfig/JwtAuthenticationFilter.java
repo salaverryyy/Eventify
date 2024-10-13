@@ -1,74 +1,61 @@
 package com.eventos.recuerdos.eventify_project.securityconfig;
 
-import com.eventos.recuerdos.eventify_project.user.domain.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+import com.eventos.recuerdos.eventify_project.securityconfig.JwtService;
+import com.eventos.recuerdos.eventify_project.securityconfig.UserDetailsServiceImpl;
 
 import java.io.IOException;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-
     private final JwtService jwtService;
-    private final UserService userService;
+    private final UserDetailsServiceImpl userService;
 
     @Autowired
-    public JwtAuthenticationFilter(@Lazy JwtService jwtService ,@Lazy UserService userService) {
+    public JwtAuthenticationFilter(JwtService jwtService, UserDetailsServiceImpl userService) {
         this.jwtService = jwtService;
         this.userService = userService;
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest servletRequest, HttpServletResponse servletResponse, FilterChain filterChain) throws ServletException, IOException {
-        String authHeader = servletRequest.getHeader("Authorization");
-        String jwt;
-        String userEmail;
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        final String authHeader = request.getHeader("Authorization");
+        final String jwt;
+        final String userEmail;
 
-        if (!StringUtils.hasText(authHeader) || !StringUtils.startsWithIgnoreCase(authHeader, "Bearer ")) {
-            filterChain.doFilter(servletRequest, servletResponse);
+        if (!StringUtils.hasText(authHeader) || !StringUtils.startsWithIgnoreCase(authHeader, "Bearer")) {
+            filterChain.doFilter(request, response);
             return;
         }
 
         jwt = authHeader.substring(7);
+        userEmail = jwtService.extractUserName(jwt);
 
-        try {
-            userEmail = jwtService.extractUsername(jwt);  // Extraer email o nombre de usuario
+        if (StringUtils.hasText(userEmail) && SecurityContextHolder.getContext().getAuthentication() == null) {
+            UserDetails userDetails = userService.loadUserByUsername(userEmail);
 
-            if (StringUtils.hasText(userEmail) && SecurityContextHolder.getContext().getAuthentication() == null) {
-                // Cargar el UserDetails usando el email extraído
-                UserDetails userDetails = userService.loadUserByUsername(userEmail);
-
-                // Validar el token pasando el JWT y el UserDetails
-                jwtService.validateToken(jwt, userDetails);
-
-                // Crear el token de autenticación
-                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+            if (jwtService.isTokenValid(jwt, userDetails)) {
+                SecurityContext context = SecurityContextHolder.createEmptyContext();
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
-
-                authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(servletRequest));
-
-                // Establecer la autenticación en el contexto
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                context.setAuthentication(authToken);
+                SecurityContextHolder.setContext(context);
             }
-
-        } catch (AuthenticationException ex) {
-            servletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token JWT no válido");
-            return;
         }
 
-        filterChain.doFilter(servletRequest, servletResponse);
+        filterChain.doFilter(request, response);
     }
-
 }
