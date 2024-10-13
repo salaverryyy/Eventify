@@ -1,6 +1,7 @@
 package com.eventos.recuerdos.eventify_project.notification.application;
 
 
+import com.eventos.recuerdos.eventify_project.Email.EmailService;
 import com.eventos.recuerdos.eventify_project.notification.domain.NotificationService;
 import com.eventos.recuerdos.eventify_project.notification.domain.NotificationType;
 import com.eventos.recuerdos.eventify_project.notification.dto.NotificationDTO;
@@ -15,7 +16,15 @@ import java.util.List;
 public class NotificationController {
     @Autowired
     private NotificationService notificationService;
+    @Autowired
+    private EmailService emailService;
 
+    //Enviar una notificación via correo
+    @PostMapping("/send-notification")
+    public String sendNotification(@RequestBody NotificationRequest request) {
+        emailService.sendEmail(request.getEmail(), request.getSubject(), request.getBody());
+        return "Notification sent successfully!";
+    }
     // Obtener los detalles de una notificación por ID
     @GetMapping("/{id}")
     public ResponseEntity<NotificationDTO> getNotificationById(@PathVariable Long id) {
