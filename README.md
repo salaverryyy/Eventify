@@ -7,8 +7,8 @@ Eventify es una plataforma diseñada para que los usuarios compartan recuerdos y
 
 | Nombre                 | GitHub User       | Email                           |
 | ------------------     | ----------------- | -----------------------------   |
-| **Giordano Fuentes**   | Gibonn24          | rafael.fuenteso@utec.edu.pe     |
-| **David Salaverry**    | salaverryyy       | david.salaverryo@utec.edu.pe    |
+| **Giordano Fuentes**   | Gibonn24          | rafael.fuentes@utec.edu.pe     |
+| **David Salaverry**    | salaverryyy       | david.salaverry@utec.edu.pe    |
 | **Stephany Gutierrez** | 202110740stephany | stephany.gutierrez@utec.edu.pe  |
 
 ## Prerrequisitos 🔧
