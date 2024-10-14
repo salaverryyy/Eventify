@@ -1,5 +1,7 @@
 package com.eventos.recuerdos.eventify_project.auth.domain;
 
+import com.eventos.recuerdos.eventify_project.Email.BienvenidaHtml;
+import com.eventos.recuerdos.eventify_project.Email.MailManager;
 import com.eventos.recuerdos.eventify_project.auth.dto.JwtAuthenticationResponse;
 import com.eventos.recuerdos.eventify_project.auth.dto.SigninRequest;
 import com.eventos.recuerdos.eventify_project.securityconfig.JwtService;
@@ -11,6 +13,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 
 @Service
 public class AuthenticationService {
@@ -26,15 +30,21 @@ public class AuthenticationService {
     @Autowired
     AuthenticationManager authenticationManager;
 
+    MailManager mailManager;
+
+    public AuthenticationService(MailManager mailManager) {
+        this.mailManager = mailManager;
+    }
+
     public JwtAuthenticationResponse signup(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-
         userRepository.save(user);
         var jwt = jwtService.generateToken(user);
-
         JwtAuthenticationResponse response = new JwtAuthenticationResponse();
         response.setToken(jwt);
-
+        // Enviamos el correo de bienvenida
+        String emailContent = BienvenidaHtml.TEMPLATE_BIENVENIDA.replace("{{username}}", user.getUsername());
+        mailManager.sendMessage(user.getEmail(), emailContent);
         return response;
     }
 
