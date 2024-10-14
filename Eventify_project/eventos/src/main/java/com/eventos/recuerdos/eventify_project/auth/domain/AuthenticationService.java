@@ -1,51 +1,60 @@
 package com.eventos.recuerdos.eventify_project.auth.domain;
 
-import com.eventos.recuerdos.eventify_project.Email.BienvenidaHtml;
-import com.eventos.recuerdos.eventify_project.Email.MailManager;
 import com.eventos.recuerdos.eventify_project.auth.dto.JwtAuthenticationResponse;
 import com.eventos.recuerdos.eventify_project.auth.dto.SigninRequest;
 import com.eventos.recuerdos.eventify_project.securityconfig.JwtService;
 import com.eventos.recuerdos.eventify_project.user.domain.User;
 import com.eventos.recuerdos.eventify_project.user.infrastructure.UserRepository;
+import com.eventos.recuerdos.eventify_project.email.EmailService; // Asegúrate de importar EmailService
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.UUID;
+import org.thymeleaf.context.Context; // Importar Context para Thymeleaf
 
 @Service
 public class AuthenticationService {
-    @Autowired
-    UserRepository userRepository;
 
     @Autowired
-    PasswordEncoder passwordEncoder;
+    private UserRepository userRepository;
 
     @Autowired
-    JwtService jwtService;
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
-    AuthenticationManager authenticationManager;
+    private JwtService jwtService;
 
-    MailManager mailManager;
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
-    public AuthenticationService(MailManager mailManager) {
-        this.mailManager = mailManager;
-    }
+    @Autowired
+    private EmailService emailService; // Inyección del EmailService
 
     public JwtAuthenticationResponse signup(User user) {
+        // Codificamos la contraseña antes de guardar el usuario
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
+
+        // Generamos el token JWT para el usuario registrado
         var jwt = jwtService.generateToken(user);
         JwtAuthenticationResponse response = new JwtAuthenticationResponse();
         response.setToken(jwt);
+
         // Enviamos el correo de bienvenida
-        String emailContent = BienvenidaHtml.TEMPLATE_BIENVENIDA.replace("{{username}}", user.getUsername());
-        mailManager.sendMessage(user.getEmail(), emailContent);
+        sendWelcomeEmail(user);
+
         return response;
+    }
+
+    private void sendWelcomeEmail(User user) {
+        String subject = "Bienvenido a Eventify!";
+        // Configurar el contexto para el template del correo
+        Context context = new Context();
+        context.setVariable("username", user.getUsername());
+        String emailContent = emailService.getTemplateContent("EmailTemplates", context);
+        emailService.sendSimpleMessage(user.getEmail(), subject, emailContent);
     }
 
     public JwtAuthenticationResponse login(SigninRequest request) throws IllegalArgumentException {
@@ -67,5 +76,4 @@ public class AuthenticationService {
 
         return response;
     }
-
 }
