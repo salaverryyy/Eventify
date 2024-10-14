@@ -16,9 +16,9 @@ public class EmailListener {
     @Async
     public void handleHelloEmailEvent(HelloEmailEvent event) {
         String to = event.getEmail();
-        String subject = "Hola si :)";
+        String subject = "Mensaje de Bienvenida a Eventify";
         String text = "Este es un correo siiii.";
-        emailService.sendSimpleMessage(to, subject, text);
+        emailService.sendSimpleMessage(to, subject,text);
     }
 
 }

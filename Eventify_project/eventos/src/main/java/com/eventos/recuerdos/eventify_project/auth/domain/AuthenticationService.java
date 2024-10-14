@@ -1,5 +1,6 @@
 package com.eventos.recuerdos.eventify_project.auth.domain;
 
+import com.eventos.recuerdos.eventify_project.HelloEmailEvent;
 import com.eventos.recuerdos.eventify_project.auth.dto.JwtAuthenticationResponse;
 import com.eventos.recuerdos.eventify_project.auth.dto.SigninRequest;
 import com.eventos.recuerdos.eventify_project.securityconfig.JwtService;
@@ -7,6 +8,7 @@ import com.eventos.recuerdos.eventify_project.user.domain.User;
 import com.eventos.recuerdos.eventify_project.user.infrastructure.UserRepository;
 import com.eventos.recuerdos.eventify_project.email.EmailService; // Asegúrate de importar EmailService
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -32,6 +34,9 @@ public class AuthenticationService {
     @Autowired
     private EmailService emailService; // Inyección del EmailService
 
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
+
     public JwtAuthenticationResponse signup(User user) {
         // Codificamos la contraseña antes de guardar el usuario
         user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -42,20 +47,11 @@ public class AuthenticationService {
         JwtAuthenticationResponse response = new JwtAuthenticationResponse();
         response.setToken(jwt);
 
-        // Enviamos el correo de bienvenida
-        sendWelcomeEmail(user);
-
         return response;
     }
 
-    private void sendWelcomeEmail(User user) {
-        String subject = "Bienvenido a Eventify!";
-        // Configurar el contexto para el template del correo
-        Context context = new Context();
-        context.setVariable("username", user.getUsername());
-        String emailContent = emailService.getTemplateContent("EmailTemplates", context);
-        emailService.sendSimpleMessage(user.getEmail(), subject, emailContent);
-    }
+    public void sendHelloEmail(String email) {
+        applicationEventPublisher.publishEvent(new HelloEmailEvent(email));}
 
     public JwtAuthenticationResponse login(SigninRequest request) throws IllegalArgumentException {
         // Autenticación del usuario usando email y contraseña

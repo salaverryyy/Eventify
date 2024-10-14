@@ -17,6 +17,7 @@ public class EmailService {
     @Autowired
     private TemplateEngine templateEngine;
 
+
     public void sendSimpleMessage(String to, String subject, String text) {
         try {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
@@ -36,7 +37,5 @@ public class EmailService {
         }
     }
 
-    public String getTemplateContent(String templateName, Context context) {
-        return templateEngine.process(templateName, context);
-    }
+
 }
