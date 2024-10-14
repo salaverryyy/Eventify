@@ -3,15 +3,13 @@ package com.eventos.recuerdos.eventify_project.event.domain;
 import com.eventos.recuerdos.eventify_project.event.dto.EventDTO;
 import com.eventos.recuerdos.eventify_project.event.infrastructure.EventRepository;
 import com.eventos.recuerdos.eventify_project.exception.ResourceNotFoundException;
-import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationDTO;
 import com.eventos.recuerdos.eventify_project.invitation.domain.Invitation;
 import com.eventos.recuerdos.eventify_project.memory.domain.Memory;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
 import com.eventos.recuerdos.eventify_project.memory.infrastructure.MemoryRepository;
-import com.eventos.recuerdos.eventify_project.user.domain.User;
+import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
 import com.eventos.recuerdos.eventify_project.user.dto.EventGuestDTO;
-import com.eventos.recuerdos.eventify_project.user.dto.UserDTO;
-import com.eventos.recuerdos.eventify_project.user.infrastructure.UserRepository;
+import com.eventos.recuerdos.eventify_project.user.infrastructure.UserAccountRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,7 +24,7 @@ public class EventService {
     private EventRepository eventRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private UserAccountRepository userAccountRepository;
 
     @Autowired
     private MemoryRepository memoryRepository;
@@ -61,7 +59,7 @@ public class EventService {
 
         // Actualizar el organizador solo si se proporciona un organizerId válido
         if (eventDTO.getOrganizerId() != null) {
-            User organizer = userRepository.findById(eventDTO.getOrganizerId())
+            UserAccount organizer = userAccountRepository.findById(eventDTO.getOrganizerId())
                     .orElseThrow(() -> new ResourceNotFoundException("Organizador no encontrado con ID: " + eventDTO.getOrganizerId()));
             event.setOrganizer(organizer);
         }

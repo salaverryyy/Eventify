@@ -5,9 +5,9 @@ import com.eventos.recuerdos.eventify_project.like.dto.LikeDTO;
 import com.eventos.recuerdos.eventify_project.like.infrastructure.LikeRepository;
 import com.eventos.recuerdos.eventify_project.publication.domain.Publication;
 import com.eventos.recuerdos.eventify_project.publication.infrastructure.PublicationRepository;
-import com.eventos.recuerdos.eventify_project.user.domain.User;
+import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
 import com.eventos.recuerdos.eventify_project.user.dto.UserDTO;
-import com.eventos.recuerdos.eventify_project.user.infrastructure.UserRepository;
+import com.eventos.recuerdos.eventify_project.user.infrastructure.UserAccountRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -25,7 +25,7 @@ public class LikeService {
     @Autowired
     private PublicationRepository publicationRepository;
     @Autowired
-    private UserRepository userRepository;
+    private UserAccountRepository userAccountRepository;
     @Autowired
     private ModelMapper modelMapper;
 
@@ -46,13 +46,13 @@ public class LikeService {
         String username = userDetails.getUsername();
 
         // Buscar al usuario en la base de datos usando el username
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con username: " + username));
+        UserAccount userAccount = userAccountRepository.findByUsername(username);
+
 
         // Crear una instancia de PublicationLike y guardarla
         PublicationLike publicationLike = new PublicationLike();
         publicationLike.setPublication(publication);
-        publicationLike.setUser(user);
+        publicationLike.setUserAccount(userAccount);
 
         // Guardar el like en la base de datos
         likeRepository.save(publicationLike);
@@ -67,7 +67,7 @@ public class LikeService {
 
         return likeRepository.findByPublication(publication)
                 .stream()
-                .map(publicationLike -> modelMapper.map(publicationLike.getUser(), UserDTO.class))
+                .map(publicationLike -> modelMapper.map(publicationLike.getUserAccount(), UserDTO.class))
                 .collect(Collectors.toList());
     }
 
@@ -76,10 +76,10 @@ public class LikeService {
         Publication publication = publicationRepository.findById(publicationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Publicación no encontrada con id: " + publicationId));
 
-        User user = userRepository.findById(userId)
+        UserAccount userAccount = userAccountRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + userId));
 
-        PublicationLike publicationLike = likeRepository.findByPublicationAndUser(publication, user)
+        PublicationLike publicationLike = likeRepository.findByPublicationAndUser(publication, userAccount)
                 .orElseThrow(() -> new ResourceNotFoundException("El usuario no ha dado 'me gusta' a esta publicación."));
 
         // Quitar el like y reducir el contador

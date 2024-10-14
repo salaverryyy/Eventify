@@ -1,12 +1,9 @@
 package com.eventos.recuerdos.eventify_project.user.application;
 
 import com.eventos.recuerdos.eventify_project.invitation.domain.Invitation;
-import com.eventos.recuerdos.eventify_project.invitation.domain.InvitationService;
 import com.eventos.recuerdos.eventify_project.publication.domain.Publication;
-import com.eventos.recuerdos.eventify_project.publication.domain.PublicationService;
 import com.eventos.recuerdos.eventify_project.user.domain.AdminService;
-import com.eventos.recuerdos.eventify_project.user.domain.User;
-import com.eventos.recuerdos.eventify_project.user.domain.UserService;
+import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,7 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/admin")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 public class AdminController {
 
     private final AdminService adminService;
@@ -27,9 +24,9 @@ public class AdminController {
     }
 
     @GetMapping("/users")
-    public ResponseEntity<List<User>> getAllUsers() {
-        List<User> users = adminService.getAllUsers();
-        return ResponseEntity.ok(users);
+    public ResponseEntity<List<UserAccount>> getAllUsers() {
+        List<UserAccount> userAccounts = adminService.getAllUsers();
+        return ResponseEntity.ok(userAccounts);
     }
 
     @GetMapping("/invitations")

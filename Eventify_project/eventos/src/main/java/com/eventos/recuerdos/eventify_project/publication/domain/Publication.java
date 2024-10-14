@@ -3,7 +3,7 @@ package com.eventos.recuerdos.eventify_project.publication.domain;
 import com.eventos.recuerdos.eventify_project.comment.domain.Comment;
 import com.eventos.recuerdos.eventify_project.like.domain.PublicationLike;
 import com.eventos.recuerdos.eventify_project.memory.domain.Memory;
-import com.eventos.recuerdos.eventify_project.user.domain.User;
+import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.OnDelete;
@@ -25,7 +25,7 @@ public class Publication {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "author_id", nullable = false)  // Cambiado para coincidir con 'author'
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private User author;  // Usuario que hizo la publicación
+    private UserAccount author;  // Usuario que hizo la publicación
 
     // Relación Many-to-One con Memory (recuerdo)
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

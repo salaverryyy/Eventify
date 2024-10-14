@@ -1,7 +1,7 @@
 package com.eventos.recuerdos.eventify_project.like.domain;
 
 import com.eventos.recuerdos.eventify_project.publication.domain.Publication;
-import com.eventos.recuerdos.eventify_project.user.domain.User;
+import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.OnDelete;
@@ -24,7 +24,7 @@ public class PublicationLike {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private User user; // Usuario que dio el like
+    private UserAccount userAccount; // Usuario que dio el like
 
     // Relación Many-to-One con la Publicación a la que se dio el like
     @ManyToOne(fetch = FetchType.LAZY)
