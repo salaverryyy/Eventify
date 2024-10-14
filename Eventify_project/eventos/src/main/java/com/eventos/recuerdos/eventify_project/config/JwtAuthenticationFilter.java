@@ -1,5 +1,6 @@
-package com.eventos.recuerdos.eventify_project.securityconfig;
+package com.eventos.recuerdos.eventify_project.config;
 
+import com.eventos.recuerdos.eventify_project.securityconfig.domain.UserDetailsServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,8 +14,8 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-import com.eventos.recuerdos.eventify_project.securityconfig.JwtService;
-import com.eventos.recuerdos.eventify_project.securityconfig.UserDetailsServiceImpl;
+import com.eventos.recuerdos.eventify_project.securityconfig.domain.JwtService;
+import com.eventos.recuerdos.eventify_project.securityconfig.domain.UserDetailsServiceImpl;
 
 import java.io.IOException;
 

@@ -2,7 +2,7 @@ package com.eventos.recuerdos.eventify_project.invitation.domain;
 
 import com.eventos.recuerdos.eventify_project.event.domain.Event;
 import com.eventos.recuerdos.eventify_project.memory.domain.Memory;
-import com.eventos.recuerdos.eventify_project.user.domain.User;
+import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.OnDelete;
@@ -30,12 +30,12 @@ public class Invitation {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private User usuarioInvitador;
+    private UserAccount usuarioInvitador;
 
     // Relación con el usuario invitado (opcional)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "invited_user_id", nullable = true)
-    private User usuarioInvitado;
+    private UserAccount usuarioInvitado;
 
     // Relación con un evento
     @ManyToOne(fetch = FetchType.LAZY)

@@ -1,4 +1,4 @@
-package com.eventos.recuerdos.eventify_project.securityconfig;
+package com.eventos.recuerdos.eventify_project.securityconfig.domain;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -14,7 +14,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
-
 
 @Service
 public class JwtService {

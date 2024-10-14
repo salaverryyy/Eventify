@@ -5,8 +5,8 @@ import com.eventos.recuerdos.eventify_project.comment.infrastructure.CommentRepo
 import com.eventos.recuerdos.eventify_project.exception.ResourceNotFoundException;
 import com.eventos.recuerdos.eventify_project.publication.domain.Publication;
 import com.eventos.recuerdos.eventify_project.publication.infrastructure.PublicationRepository;
-import com.eventos.recuerdos.eventify_project.user.domain.User;
-import com.eventos.recuerdos.eventify_project.user.infrastructure.UserRepository;
+import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
+import com.eventos.recuerdos.eventify_project.user.infrastructure.UserAccountRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,7 +24,7 @@ public class CommentService {
     private PublicationRepository publicationRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private UserAccountRepository userAccountRepository;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -44,13 +44,13 @@ public class CommentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Publicación no encontrada con id: " + publicationId));
 
         // Verificar si el usuario existe
-        User user = userRepository.findById(commentDTO.getUserId())
+        UserAccount userAccount = userAccountRepository.findById(commentDTO.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + commentDTO.getUserId()));
 
         // Mapear el DTO a la entidad Comment
         Comment comment = modelMapper.map(commentDTO, Comment.class);
         comment.setPublication(publication); // Asociar con la publicación
-        comment.setUser(user); // Asociar con el usuario
+        comment.setUserAccount(userAccount); // Asociar con el usuario
 
         // Asignar la fecha de creación
         comment.setCommentDate(LocalDateTime.now());

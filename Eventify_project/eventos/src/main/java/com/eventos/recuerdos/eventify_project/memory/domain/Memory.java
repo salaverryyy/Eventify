@@ -3,7 +3,7 @@ package com.eventos.recuerdos.eventify_project.memory.domain;
 import com.eventos.recuerdos.eventify_project.event.domain.Event;
 import com.eventos.recuerdos.eventify_project.invitation.domain.Invitation;
 import com.eventos.recuerdos.eventify_project.publication.domain.Publication;
-import com.eventos.recuerdos.eventify_project.user.domain.User;
+import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -28,7 +28,7 @@ public class Memory {
     // Relación Many-to-One con User (usuario creador del recuerdo)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private UserAccount userAccount;
 
     // Relación One-to-Many con publicaciones
     @OneToMany(mappedBy = "memory", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)

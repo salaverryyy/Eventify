@@ -2,7 +2,7 @@ package com.eventos.recuerdos.eventify_project.event.domain;
 
 import com.eventos.recuerdos.eventify_project.invitation.domain.Invitation;
 import com.eventos.recuerdos.eventify_project.memory.domain.Memory;
-import com.eventos.recuerdos.eventify_project.user.domain.User;
+import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.OnDelete;
@@ -28,7 +28,7 @@ public class Event {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "organizer_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private User organizer;  // Asegúrate de usar 'organizer' en el repositorio
+    private UserAccount organizer;  // Asegúrate de usar 'organizer' en el repositorio
 
     // Relación One-to-One con Memory
     @OneToOne(fetch = FetchType.LAZY)

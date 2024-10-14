@@ -4,7 +4,7 @@ import com.eventos.recuerdos.eventify_project.invitation.domain.Invitation;
 import com.eventos.recuerdos.eventify_project.invitation.infrastructure.InvitationRepository;
 import com.eventos.recuerdos.eventify_project.publication.domain.Publication;
 import com.eventos.recuerdos.eventify_project.publication.infrastructure.PublicationRepository;
-import com.eventos.recuerdos.eventify_project.user.infrastructure.UserRepository;
+import com.eventos.recuerdos.eventify_project.user.infrastructure.UserAccountRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,22 +12,22 @@ import java.util.List;
 @Service
 public class AdminService {
 
-    private final UserRepository userRepository;
+    private final UserAccountRepository userAccountRepository;
     private final InvitationRepository invitationRepository;
     private final PublicationRepository publicationRepository;
 
     public AdminService(
-            UserRepository userRepository,
+            UserAccountRepository userAccountRepository,
             InvitationRepository invitationRepository,
             PublicationRepository publicationRepository) {
-        this.userRepository = userRepository;
+        this.userAccountRepository = userAccountRepository;
         this.invitationRepository = invitationRepository;
         this.publicationRepository = publicationRepository;
     }
 
     // Obtener todos los usuarios
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public List<UserAccount> getAllUsers() {
+        return userAccountRepository.findAll();
     }
 
     // Obtener todas las invitaciones

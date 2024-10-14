@@ -1,6 +1,5 @@
 package com.eventos.recuerdos.eventify_project.memory.domain;
 
-import com.eventos.recuerdos.eventify_project.exception.ResourceBadRequestException;
 import com.eventos.recuerdos.eventify_project.exception.ResourceConflictException;
 import com.eventos.recuerdos.eventify_project.exception.ResourceNotFoundException;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
@@ -8,15 +7,14 @@ import com.eventos.recuerdos.eventify_project.memory.dto.MemoryWithPublicationsD
 import com.eventos.recuerdos.eventify_project.memory.infrastructure.MemoryRepository;
 import com.eventos.recuerdos.eventify_project.publication.dto.PublicationDTO;
 import com.eventos.recuerdos.eventify_project.publication.infrastructure.PublicationRepository;
-import com.eventos.recuerdos.eventify_project.user.domain.User;
-import com.eventos.recuerdos.eventify_project.user.infrastructure.UserRepository;
+import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
+import com.eventos.recuerdos.eventify_project.user.infrastructure.UserAccountRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,7 +24,7 @@ public class MemoryService {
     @Autowired
     private PublicationRepository publicationRepository;
     @Autowired
-    private UserRepository userRepository;
+    private UserAccountRepository userAccountRepository;
 
     @Autowired
 
@@ -43,10 +41,10 @@ public class MemoryService {
         if (memoryRepository.existsByMemoryName(memoryDTO.getMemoryName())) {
             throw new ResourceConflictException("Ya existe un recuerdo con el mismo título.");
         }
-        User user = userRepository.findById(memoryDTO.getUserId())
+        UserAccount userAccount = userAccountRepository.findById(memoryDTO.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + memoryDTO.getUserId()));
         Memory memory = modelMapper.map(memoryDTO, Memory.class);
-        memory.setUser(user);
+        memory.setUserAccount(userAccount);
         memory.setMemoryCreationDate(LocalDateTime.now());
         Memory savedMemory = memoryRepository.save(memory);
 

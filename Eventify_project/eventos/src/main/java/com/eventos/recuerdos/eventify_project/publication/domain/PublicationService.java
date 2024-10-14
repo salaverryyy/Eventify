@@ -1,18 +1,15 @@
 package com.eventos.recuerdos.eventify_project.publication.domain;
 
-import com.eventos.recuerdos.eventify_project.comment.domain.Comment;
-import com.eventos.recuerdos.eventify_project.comment.dto.CommentDTO;
 import com.eventos.recuerdos.eventify_project.comment.infrastructure.CommentRepository;
 import com.eventos.recuerdos.eventify_project.exception.ResourceNotFoundException;
-import com.eventos.recuerdos.eventify_project.like.domain.PublicationLike;
 import com.eventos.recuerdos.eventify_project.like.dto.LikeDTO;
 import com.eventos.recuerdos.eventify_project.like.infrastructure.LikeRepository;
 import com.eventos.recuerdos.eventify_project.memory.domain.Memory;
 import com.eventos.recuerdos.eventify_project.memory.infrastructure.MemoryRepository;
 import com.eventos.recuerdos.eventify_project.publication.dto.PublicationDTO;
 import com.eventos.recuerdos.eventify_project.publication.infrastructure.PublicationRepository;
-import com.eventos.recuerdos.eventify_project.user.domain.User;
-import com.eventos.recuerdos.eventify_project.user.infrastructure.UserRepository;
+import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
+import com.eventos.recuerdos.eventify_project.user.infrastructure.UserAccountRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,7 +38,7 @@ public class PublicationService {
     private ModelMapper modelMapper;
 
     @Autowired
-    private UserRepository userRepository;
+    private UserAccountRepository userAccountRepository;
 
     public PublicationDTO getPublicationById(Long id) {
         Publication publication = publicationRepository.findById(id)
@@ -56,14 +53,14 @@ public class PublicationService {
 
         Memory memory = memoryRepository.findById(memoryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Recuerdo no encontrado con id: " + memoryId));
-        User user = userRepository.findById(userId)
+        UserAccount userAccount = userAccountRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + userId));
 
         Publication publication = new Publication();
         publication.setDescription(description);
         publication.setFileUrl(uploadFileToS3(file));
         publication.setFileType(detectFileType(file));
-        publication.setAuthor(user);
+        publication.setAuthor(userAccount);
         publication.setMemory(memory);
         publication.setPublicationDate(LocalDateTime.now());
 

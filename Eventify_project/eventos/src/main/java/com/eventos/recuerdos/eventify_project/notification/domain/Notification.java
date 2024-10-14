@@ -3,7 +3,7 @@ package com.eventos.recuerdos.eventify_project.notification.domain;
 import com.eventos.recuerdos.eventify_project.event.domain.Event;
 import com.eventos.recuerdos.eventify_project.memory.domain.Memory;
 import com.eventos.recuerdos.eventify_project.publication.domain.Publication;
-import com.eventos.recuerdos.eventify_project.user.domain.User;
+import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -30,7 +30,7 @@ public class Notification {
     // Relación Many-to-One con el Usuario receptor.
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User userReceiver;
+    private UserAccount userAccountReceiver;
 
     @Enumerated(EnumType.STRING)
     private RelatedWith relatedWith; // Relación con EVENT, MEMORY o PUBLICATION.

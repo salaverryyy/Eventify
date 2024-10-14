@@ -1,6 +1,5 @@
 package com.eventos.recuerdos.eventify_project.user.dto;
 
-import com.eventos.recuerdos.eventify_project.user.domain.User;
 import lombok.Data;
 
 import java.time.LocalDate;

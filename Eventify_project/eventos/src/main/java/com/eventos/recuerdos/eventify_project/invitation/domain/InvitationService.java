@@ -8,11 +8,9 @@ import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationByQrDTO;
 import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationDTO;
 import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationStatusDTO;
 import com.eventos.recuerdos.eventify_project.invitation.infrastructure.InvitationRepository;
-import com.eventos.recuerdos.eventify_project.user.domain.User;
-import com.eventos.recuerdos.eventify_project.user.domain.UserService;
-import com.eventos.recuerdos.eventify_project.user.infrastructure.UserRepository;
+import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
+import com.eventos.recuerdos.eventify_project.user.infrastructure.UserAccountRepository;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,16 +20,16 @@ import java.util.stream.Collectors;
 public class InvitationService {
 
     private final InvitationRepository invitationRepository;
-    private final UserRepository userRepository;
+    private final UserAccountRepository userAccountRepository;
     private final EventRepository eventRepository;
     private final ModelMapper modelMapper;
 
     public InvitationService(InvitationRepository invitationRepository,
-                             UserRepository userRepository,
+                             UserAccountRepository userAccountRepository,
                              EventRepository eventRepository,
                              ModelMapper modelMapper) {
         this.invitationRepository = invitationRepository;
-        this.userRepository = userRepository;
+        this.userAccountRepository = userAccountRepository;
         this.eventRepository = eventRepository;
         this.modelMapper = modelMapper;
     }
@@ -63,9 +61,9 @@ public class InvitationService {
         invitation.setQrCode(dto.getQrCode());
 
         if (dto.getInvitedUserId() != null) {
-            User invitedUser = userRepository.findById(dto.getInvitedUserId())
+            UserAccount invitedUserAccount = userAccountRepository.findById(dto.getInvitedUserId())
                     .orElseThrow(() -> new ResourceNotFoundException("Usuario invitado no encontrado"));
-            invitation.setUsuarioInvitado(invitedUser);
+            invitation.setUsuarioInvitado(invitedUserAccount);
         }
 
         return mapAndSaveInvitation(invitation);
@@ -78,13 +76,13 @@ public class InvitationService {
     }
 
     private Invitation createInvitation(Long userId, Long eventId, String guestEmail) {
-        User user = userRepository.findById(userId)
+        UserAccount userAccount = userAccountRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + userId));
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado con id: " + eventId));
 
         Invitation invitation = new Invitation();
-        invitation.setUsuarioInvitador(user);
+        invitation.setUsuarioInvitador(userAccount);
         invitation.setEvent(event);
         invitation.setGuestEmail(guestEmail);
         invitation.setStatus(InvitationStatus.PENDING); // Asigna el valor del enum correctamente
