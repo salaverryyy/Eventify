@@ -1,6 +1,3 @@
-Aquí tienes un ejemplo de un archivo **README** para tu proyecto **Eventify** en GitHub, basado en la información proporcionada sobre tu proyecto y siguiendo una estructura estándar para presentar claramente la funcionalidad y detalles de tu proyecto:
-
----
 
 # Eventify: Share Your Memories 📝🎉
 
