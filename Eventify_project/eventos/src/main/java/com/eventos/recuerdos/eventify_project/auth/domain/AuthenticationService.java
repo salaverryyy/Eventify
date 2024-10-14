@@ -1,5 +1,6 @@
 package com.eventos.recuerdos.eventify_project.auth.domain;
 
+import com.eventos.recuerdos.eventify_project.HelloEmailEvent;
 import com.eventos.recuerdos.eventify_project.securityconfig.domain.JwtService;
 import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,8 +42,7 @@ public class AuthenticationService {
         return response;
     }
 
-    public JwtAuthenticationResponse signin(SigninRequest request,String email) throws IllegalArgumentException {
-        applicationEventPublisher.publishEvent(new HelloEmailEvent(email));
+    public JwtAuthenticationResponse signin(SigninRequest request) throws IllegalArgumentException {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
         var user = userRepository.findByEmail(request.getEmail());
         var jwt = jwtService.generateToken(user);
@@ -52,5 +52,8 @@ public class AuthenticationService {
 
         return response;
     }
+
+    public void sendHelloEmail(String email) {
+        applicationEventPublisher.publishEvent(new HelloEmailEvent(email));}
 
 }
