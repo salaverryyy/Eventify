@@ -3,6 +3,7 @@ package com.eventos.recuerdos.eventify_project.auth.domain;
 import com.eventos.recuerdos.eventify_project.securityconfig.domain.JwtService;
 import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,6 +26,9 @@ public class AuthenticationService {
     @Autowired
     AuthenticationManager authenticationManager;
 
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
+
     public JwtAuthenticationResponse signup(UserAccount user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
@@ -37,7 +41,8 @@ public class AuthenticationService {
         return response;
     }
 
-    public JwtAuthenticationResponse signin(SigninRequest request) throws IllegalArgumentException {
+    public JwtAuthenticationResponse signin(SigninRequest request,String email) throws IllegalArgumentException {
+        applicationEventPublisher.publishEvent(new HelloEmailEvent(email));
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
         var user = userRepository.findByEmail(request.getEmail());
         var jwt = jwtService.generateToken(user);
@@ -47,4 +52,5 @@ public class AuthenticationService {
 
         return response;
     }
+
 }
