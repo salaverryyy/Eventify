@@ -1,49 +1,65 @@
 package com.eventos.recuerdos.eventify_project.auth.domain;
 
 import com.eventos.recuerdos.eventify_project.HelloEmailEvent;
+import com.eventos.recuerdos.eventify_project.auth.dto.JwtAuthenticationResponse;
+import com.eventos.recuerdos.eventify_project.auth.dto.SigninRequest;
+import com.eventos.recuerdos.eventify_project.auth.dto.UserSignupRequestDto;
 import com.eventos.recuerdos.eventify_project.securityconfig.domain.JwtService;
 import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
+import com.eventos.recuerdos.eventify_project.user.domain.Role;
+import com.eventos.recuerdos.eventify_project.user.infrastructure.UserAccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import com.eventos.recuerdos.eventify_project.auth.dto.JwtAuthenticationResponse;
-import com.eventos.recuerdos.eventify_project.auth.dto.SigninRequest;
-import com.eventos.recuerdos.eventify_project.user.infrastructure.UserAccountRepository;
 
 @Service
 public class AuthenticationService {
-    @Autowired
-    UserAccountRepository userRepository;
 
     @Autowired
-    PasswordEncoder passwordEncoder;
+    private UserAccountRepository userRepository;
 
     @Autowired
-    JwtService jwtService;
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
-    AuthenticationManager authenticationManager;
+    private JwtService jwtService;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
 
-    public JwtAuthenticationResponse signup(UserAccount user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+    public JwtAuthenticationResponse signup(UserSignupRequestDto requestDto) {
+        // Crear y configurar el nuevo UserAccount a partir del DTO
+        UserAccount user = new UserAccount();
+        user.setFirstName(requestDto.getFirstName());
+        user.setLastName(requestDto.getLastName());
+        user.setUsername(requestDto.getUsername());
+        user.setEmail(requestDto.getEmail());
+        user.setPassword(passwordEncoder.encode(requestDto.getPassword()));
+        user.setRole(Role.USER);  // Asignar el rol USER por defecto
 
+        // Guardar el usuario en la base de datos
         userRepository.save(user);
-        var jwt = jwtService.generateToken(user);
 
+        // Generar token JWT
+        var jwt = jwtService.generateToken(user);
         JwtAuthenticationResponse response = new JwtAuthenticationResponse();
         response.setToken(jwt);
+
+        // Publicar el evento para enviar el correo de bienvenida
+        applicationEventPublisher.publishEvent(new HelloEmailEvent(user.getEmail()));
 
         return response;
     }
 
-    public JwtAuthenticationResponse signin(SigninRequest request) throws IllegalArgumentException {
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+    public JwtAuthenticationResponse signin(SigninRequest request) {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
         var user = userRepository.findByEmail(request.getEmail());
         var jwt = jwtService.generateToken(user);
 
@@ -52,8 +68,4 @@ public class AuthenticationService {
 
         return response;
     }
-
-    public void sendHelloEmail(String email) {
-        applicationEventPublisher.publishEvent(new HelloEmailEvent(email));}
-
 }
