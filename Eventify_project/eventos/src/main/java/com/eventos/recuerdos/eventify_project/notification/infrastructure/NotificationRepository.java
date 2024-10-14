@@ -13,10 +13,10 @@ import java.util.List;
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
 
     // Buscar notificaciones por receptor
-    List<Notification> findByUserReceiverId(Long userId);
+    List<Notification> findByUserAccountReceiverId(Long userId);
 
     // Buscar notificaciones no leídas por receptor
-    List<Notification> findByUserReceiverIdAndStatus(Long userId, Status status);
+    List<Notification> findByUserAccountReceiverIdAndStatus(Long userId, Status status);
 
     // Filtrar notificaciones por tipo
     List<Notification> findByType(NotificationType type);
