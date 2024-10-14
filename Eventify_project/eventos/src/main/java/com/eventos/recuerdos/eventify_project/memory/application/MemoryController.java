@@ -6,12 +6,15 @@ import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryWithPublicationsDTO;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("/recuerdos")
+@RequestMapping("/memories")
 public class MemoryController {
 
     @Autowired
@@ -26,11 +29,16 @@ public class MemoryController {
     @PostMapping
     public ResponseEntity<MemoryDTO> createMemory(@Valid @RequestBody MemoryDTO memoryDTO, BindingResult result) {
         if (result.hasErrors()) {
-            throw new ResourceBadRequestException("pon los datos correctos porfavor");
+            throw new ResourceBadRequestException("Pon los datos correctos por favor");
         }
+
+        // Llamar al servicio para crear el Memory
         MemoryDTO createdMemory = memoryService.createMemory(memoryDTO);
-        return ResponseEntity.ok(createdMemory);
+
+        // Devolver la respuesta HTTP con el Memory creado
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdMemory);
     }
+
 
     @PutMapping("/{id}")
     public ResponseEntity<MemoryDTO> updateMemory(@PathVariable Long id, @Valid @RequestBody MemoryDTO memoryDTO, BindingResult result) {
@@ -51,5 +59,12 @@ public class MemoryController {
     public ResponseEntity<MemoryWithPublicationsDTO> getMemoryWithPublications(@PathVariable Long id) {
         MemoryWithPublicationsDTO memoryWithPublications = memoryService.getMemoryWithPublications(id);
         return ResponseEntity.ok(memoryWithPublications);
+    }
+
+    //Obtener todos los memory credos
+    @GetMapping
+    public ResponseEntity<List<MemoryDTO>> getAllMemories() {
+        List<MemoryDTO> memories = memoryService.getAllMemories();
+        return ResponseEntity.ok(memories);
     }
 }
