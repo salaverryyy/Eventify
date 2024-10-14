@@ -79,7 +79,7 @@ public class LikeService {
         UserAccount userAccount = userAccountRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + userId));
 
-        PublicationLike publicationLike = likeRepository.findByPublicationAndUser(publication, userAccount)
+        PublicationLike publicationLike = likeRepository.findByPublicationAndUserAccount(publication, userAccount)
                 .orElseThrow(() -> new ResourceNotFoundException("El usuario no ha dado 'me gusta' a esta publicación."));
 
         // Quitar el like y reducir el contador

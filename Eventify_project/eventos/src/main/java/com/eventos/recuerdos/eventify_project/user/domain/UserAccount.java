@@ -48,7 +48,7 @@ public class UserAccount implements UserDetails {
     private Boolean enable = true;
 
     // Relaciones con otras entidades
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(mappedBy = "userAccount", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Memory> memories = new ArrayList<>(); // Lista de recuerdos creados
 
     @OneToMany(mappedBy = "usuarioInvitador", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
@@ -57,7 +57,7 @@ public class UserAccount implements UserDetails {
     @OneToMany(mappedBy = "usuarioInvitado", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Invitation> invitationsReceived = new ArrayList<>(); // Invitaciones recibidas
 
-    @OneToMany(mappedBy = "userReceiver", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(mappedBy = "userAccountReceiver", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Notification> notifications = new ArrayList<>(); // Notificaciones recibidas
 
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)

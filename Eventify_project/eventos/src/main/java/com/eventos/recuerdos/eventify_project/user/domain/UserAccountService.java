@@ -61,7 +61,7 @@ public class UserAccountService {
     // Eliminar usuario
     public void deleteUser(Long id) {
         eventRepository.deleteByOrganizer_Id(id);
-        memoryRepository.deleteByUserId(id);
+        memoryRepository.deleteByUserAccountId(id);
         userAccountRepository.deleteById(id);
     }
 
