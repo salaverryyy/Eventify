@@ -132,8 +132,4 @@ Este proyecto está bajo la Licencia **MIT**. Puedes ver más detalles en el arc
 
 ---
 
-Este README proporciona una estructura clara y profesional para tu proyecto **Eventify** en GitHub, mostrando cómo configurarlo, sus principales endpoints y otras secciones esenciales.
 
-Hotkeys:
-- W: Crear los scripts para poblar la base de datos.
-- D: Mejorar la estructura de la API
