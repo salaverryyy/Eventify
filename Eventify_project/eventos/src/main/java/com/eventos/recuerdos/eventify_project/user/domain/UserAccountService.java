@@ -54,7 +54,15 @@ public class UserAccountService {
                     user.setLastName(userDTO.getLastName());
                     user.setUsername(userDTO.getUsername());
                     // Guarda los cambios y devuelve el objeto actualizado mapeado a UserDTO
-                    return modelMapper.map(userAccountRepository.save(user), UserDTO.class);
+                    userAccountRepository.save(user);
+
+                    // Crear un UserDTO utilizando getUsernameField para obtener el valor de username
+                    UserDTO updatedUserDTO = new UserDTO();
+                    updatedUserDTO.setFirstName(user.getFirstName());
+                    updatedUserDTO.setLastName(user.getLastName());
+                    updatedUserDTO.setUsername(user.getUsernameField()); // Utilizar getUsernameField para el username
+
+                    return updatedUserDTO;
                 })
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
     }
@@ -64,6 +72,9 @@ public class UserAccountService {
                 .map(user -> user.getEmail().equals(email))
                 .orElse(false);
     }
+
+
+
 
 
     // Eliminar usuario
