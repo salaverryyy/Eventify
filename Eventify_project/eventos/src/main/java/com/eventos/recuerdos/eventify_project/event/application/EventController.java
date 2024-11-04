@@ -3,16 +3,21 @@ package com.eventos.recuerdos.eventify_project.event.application;
 import com.eventos.recuerdos.eventify_project.event.domain.EventService;
 import com.eventos.recuerdos.eventify_project.event.dto.EventBasicDto;
 import com.eventos.recuerdos.eventify_project.event.dto.EventDTO;
+import com.eventos.recuerdos.eventify_project.exception.ResourceNotFoundException;
 import com.eventos.recuerdos.eventify_project.invitation.domain.InvitationService;
 import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationDTO;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
+import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
+import com.eventos.recuerdos.eventify_project.user.domain.UserAccountService;
 import com.eventos.recuerdos.eventify_project.user.dto.EventGuestDTO;
 import com.eventos.recuerdos.eventify_project.user.dto.UserDTO;
+import com.eventos.recuerdos.eventify_project.user.infrastructure.UserAccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
 
 import java.security.Principal;
 import java.util.List;
@@ -25,6 +30,9 @@ public class EventController {
 
     @Autowired
     InvitationService invitationService;
+
+    @Autowired
+    private UserAccountRepository userAccountRepository;
 
 
     //Obtener los detalles de un evento
@@ -47,10 +55,17 @@ public class EventController {
 
     //Actualizar los detalles del evento
     @PatchMapping("/{id}")
-    public ResponseEntity<EventDTO> updateEvent(@PathVariable Long id, @RequestBody EventDTO eventDTO) {
-        EventDTO updatedEvent = eventService.updateEvent(id, eventDTO);
+    public ResponseEntity<EventDTO> updateEvent(@PathVariable Long id, @RequestBody EventDTO eventDTO, Principal principal) {
+        // Extrae el organizerId a partir del token
+        Long organizerId = eventService.extractUserIdFromToken(principal);
+        // Llama a updateEvent en el servicio pasando el organizerId extraído
+        EventDTO updatedEvent = eventService.updateEvent(id, eventDTO, organizerId);
         return ResponseEntity.ok(updatedEvent);
     }
+
+
+
+
 
     //Eliminar un evento
     @DeleteMapping("/{id}")

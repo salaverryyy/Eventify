@@ -11,10 +11,12 @@ import com.eventos.recuerdos.eventify_project.memory.infrastructure.MemoryReposi
 import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
 import com.eventos.recuerdos.eventify_project.user.dto.EventGuestDTO;
 import com.eventos.recuerdos.eventify_project.user.infrastructure.UserAccountRepository;
+import org.springframework.security.access.AccessDeniedException;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -57,16 +59,20 @@ public class EventService {
         return modelMapper.map(savedEvent, EventBasicDto.class);
     }
 
-
-
-
     // Actualizar un evento existente
-    public EventDTO updateEvent(Long id, EventDTO eventDTO) {
+    public EventDTO updateEvent(Long id, EventDTO eventDTO, Long organizerId) {
         // Busca el evento que deseas actualizar
-        Event event = eventRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado con ID: " + id));
+        Event event = eventRepository.findEventById(id);
+        if (event == null) {
+            throw new ResourceNotFoundException("Evento no encontrado con ID: " + id);
+        }
 
-        // Actualiza los campos del evento, excepto el ID
+        // Verifica si el organizerId coincide con el organizador del evento
+        if (event.getOrganizer() == null || !event.getOrganizer().getId().equals(organizerId)) {
+            throw new AccessDeniedException("No tienes permiso para actualizar este evento.");
+        }
+
+        // Actualiza los campos del evento, excepto el ID y el organizerId
         event.setEventName(eventDTO.getEventName());
         event.setEventDescription(eventDTO.getEventDescription());
         event.setEventDate(eventDTO.getEventDate());
@@ -77,6 +83,15 @@ public class EventService {
         // Retorna el DTO del evento actualizado
         return modelMapper.map(updatedEvent, EventDTO.class);
     }
+
+    public Long extractUserIdFromToken(Principal principal) {
+        UserAccount user = userAccountRepository.findByEmail(principal.getName());
+        if (user == null) {
+            throw new ResourceNotFoundException("Usuario no encontrado");
+        }
+        return user.getId();
+    }
+
 
 
 
