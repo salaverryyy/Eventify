@@ -13,6 +13,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -36,13 +37,18 @@ public class MemoryService {
         return modelMapper.map(memory, MemoryDTO.class);
     }
 
-    public MemoryDTO createMemory(MemoryDTO memoryDTO) {
+    public MemoryDTO createMemory(MemoryDTO memoryDTO, Principal principal) {
+        String userEmail = principal.getName(); // Obtener el email del usuario desde el token
+        UserAccount userAccount = userAccountRepository.findByEmail(userEmail);
+
+        if (userAccount == null) {
+            throw new ResourceNotFoundException("Usuario no encontrado");
+        }
 
         if (memoryRepository.existsByMemoryName(memoryDTO.getMemoryName())) {
             throw new ResourceConflictException("Ya existe un recuerdo con el mismo título.");
         }
-        UserAccount userAccount = userAccountRepository.findById(memoryDTO.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + memoryDTO.getUserId()));
+
         Memory memory = modelMapper.map(memoryDTO, Memory.class);
         memory.setUserAccount(userAccount);
         memory.setMemoryCreationDate(LocalDateTime.now());
@@ -51,6 +57,7 @@ public class MemoryService {
         // Retornar el DTO del Memory guardado
         return modelMapper.map(savedMemory, MemoryDTO.class);
     }
+
 
 
     public MemoryDTO updateMemory(Long id, MemoryDTO memoryDTO) {
