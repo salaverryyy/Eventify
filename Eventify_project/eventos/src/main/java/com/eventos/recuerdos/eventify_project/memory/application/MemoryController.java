@@ -10,7 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -27,17 +27,18 @@ public class MemoryController {
     }
 
     @PostMapping
-    public ResponseEntity<MemoryDTO> createMemory(@Valid @RequestBody MemoryDTO memoryDTO, BindingResult result) {
+    public ResponseEntity<MemoryDTO> createMemory(@Valid @RequestBody MemoryDTO memoryDTO, BindingResult result, Principal principal) {
         if (result.hasErrors()) {
             throw new ResourceBadRequestException("Pon los datos correctos por favor");
         }
 
-        // Llamar al servicio para crear el Memory
-        MemoryDTO createdMemory = memoryService.createMemory(memoryDTO);
+        // Llamar al servicio para crear el Memory, pasando el Principal
+        MemoryDTO createdMemory = memoryService.createMemory(memoryDTO, principal);
 
         // Devolver la respuesta HTTP con el Memory creado
         return ResponseEntity.status(HttpStatus.CREATED).body(createdMemory);
     }
+
 
 
     @PutMapping("/{id}")
