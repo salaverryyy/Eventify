@@ -11,6 +11,8 @@ import com.eventos.recuerdos.eventify_project.user.infrastructure.UserAccountRep
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -52,13 +54,35 @@ public class UserAccountService {
         return userDTO;
     }
 
+    // Buscar usuarios por nombre de usuario
+    public List<UserDTO> searchByUsername(String username) {
+        Pageable limit = PageRequest.of(0, 10);  // Página 0 y tamaño de página 10 (máximo 10 resultados)
+        return userAccountRepository.findByUsernameContainingIgnoreCase(username, limit)
+                .stream()
+                .map(user -> {
+                    UserDTO userDTO = new UserDTO();
+                    userDTO.setFirstName(user.getFirstName());
+                    userDTO.setLastName(user.getLastName());
+                    userDTO.setUsername(user.getUsernameField());
+                    return userDTO;
+                })
+                .collect(Collectors.toList());
+    }
+
 
     // Obtener usuario por ID
     public UserDTO getUserById(Long id) {
-        return userAccountRepository.findById(id)
-                .map(user -> modelMapper.map(user, UserDTO.class))
+        UserAccount user = userAccountRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + id));
+
+        UserDTO userDTO = new UserDTO();
+        userDTO.setFirstName(user.getFirstName());
+        userDTO.setLastName(user.getLastName());
+        userDTO.setUsername(user.getUsernameField()); // Asegura que se utiliza el username correcto
+
+        return userDTO;
     }
+
 
 
     // Actualizar usuario
@@ -135,19 +159,7 @@ public class UserAccountService {
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + userId));
     }
 
-    // Buscar usuarios por nombre de usuario
-    public List<UserDTO> searchByUsername(String username) {
-        return userAccountRepository.findByUsernameContainingIgnoreCase(username)
-                .stream()
-                .map(user -> {
-                    UserDTO userDTO = new UserDTO();
-                    userDTO.setFirstName(user.getFirstName());
-                    userDTO.setLastName(user.getLastName());
-                    userDTO.setUsername(user.getUsernameField()); // Asegúrate de que obtenga el nombre de usuario correcto
-                    return userDTO;
-                })
-                .collect(Collectors.toList());
-    }
+
 
 
 }
