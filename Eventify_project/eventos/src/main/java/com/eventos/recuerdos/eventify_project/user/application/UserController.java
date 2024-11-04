@@ -7,6 +7,7 @@ import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
 import com.eventos.recuerdos.eventify_project.user.domain.UserAccountService;
 import com.eventos.recuerdos.eventify_project.user.dto.UserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -48,10 +49,17 @@ public class UserController {
 
     // Actualizar un usuario
     @PutMapping("/{id}")
-    public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @RequestBody UserDTO userDTO) {
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @RequestBody UserDTO userDTO, Principal principal) {
+        // Verifica si el usuario autenticado coincide con el usuario a actualizar
+        if (!userAccountService.isAuthorized(id, principal.getName())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         UserDTO updatedUser = userAccountService.updateUser(id, userDTO);
-        return ResponseEntity.ok(updatedUser); // Retorna 200 OK con el cuerpo del usuario actualizado
+        return ResponseEntity.ok(updatedUser);
     }
+
 
     //Eliminar usuario
     @DeleteMapping("/{id}/delete")

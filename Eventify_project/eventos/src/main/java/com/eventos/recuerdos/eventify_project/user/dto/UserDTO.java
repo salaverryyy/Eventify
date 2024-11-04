@@ -6,12 +6,9 @@ import java.time.LocalDate;
 
 @Data
 public class UserDTO {
-    private Long id;
+    private String firstName;
+    private String lastName;
     private String username;
-    private String email;
-    private String password;
-    private LocalDate userCreationDate;
-
 }
 
 //Transferir información básica de los usuarios,

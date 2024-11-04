@@ -2,6 +2,7 @@ package com.eventos.recuerdos.eventify_project.auth.controller;
 
 import com.eventos.recuerdos.eventify_project.auth.domain.AuthenticationService;
 import com.eventos.recuerdos.eventify_project.auth.dto.JwtAuthenticationResponse;
+import com.eventos.recuerdos.eventify_project.auth.dto.LoginResponseDto;
 import com.eventos.recuerdos.eventify_project.auth.dto.SigninRequest;
 import com.eventos.recuerdos.eventify_project.auth.dto.UserSignupRequestDto;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,8 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<JwtAuthenticationResponse> signin(@RequestBody SigninRequest request) {
+    public ResponseEntity<LoginResponseDto> signin(@RequestBody SigninRequest request) {
         return ResponseEntity.ok(authenticationService.signin(request));
     }
+
 }
