@@ -1,5 +1,6 @@
 package com.eventos.recuerdos.eventify_project.securityconfig.domain;
 
+import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -25,8 +26,28 @@ public class JwtService {
     }
 
     public String generateToken(UserDetails userDetails) {
-        return generateToken(new HashMap<>(), userDetails);
+        // Llama al método de abajo con los claims extra
+        Map<String, Object> extraClaims = new HashMap<>();
+
+        // Supón que `userDetails` es una instancia de `UserAccount`
+        if (userDetails instanceof UserAccount) {
+            UserAccount user = (UserAccount) userDetails;
+            extraClaims.put("userId", user.getId());  // Agrega el userId como claim
+        }
+
+        return generateToken(extraClaims, userDetails);
     }
+
+    private String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+        return Jwts.builder()
+                .setClaims(extraClaims)  // Añade los claims extra
+                .setSubject(userDetails.getUsername())  // Aquí el subject sigue siendo el email
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))  // Configura el tiempo de expiración
+                .signWith(SignatureAlgorithm.HS512, jwtSigningKey)  // Usa la clave secreta para firmar el token
+                .compact();
+    }
+
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String userName = extractUserName(token);
@@ -38,12 +59,7 @@ public class JwtService {
         return claimsResolvers.apply(claims);
     }
 
-    private String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
-        return Jwts.builder().setClaims(extraClaims).setSubject(userDetails.getUsername())
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS512).compact();
-    }
+
 
     private boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
