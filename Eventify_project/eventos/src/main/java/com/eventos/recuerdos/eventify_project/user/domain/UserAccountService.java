@@ -38,6 +38,21 @@ public class UserAccountService {
         this.modelMapper = modelMapper;
     }
 
+
+    public UserDTO userProfile(String email) {
+        UserAccount user = userAccountRepository.findByEmail(email);
+        if (user == null) {
+            throw new ResourceNotFoundException("Usuario no encontrado con email: " + email);
+        }
+
+        UserDTO userDTO = new UserDTO();
+        userDTO.setFirstName(user.getFirstName());
+        userDTO.setLastName(user.getLastName());
+        userDTO.setUsername(user.getUsernameField());
+        return userDTO;
+    }
+
+
     // Obtener usuario por ID
     public UserDTO getUserById(Long id) {
         return userAccountRepository.findById(id)
@@ -121,8 +136,18 @@ public class UserAccountService {
     }
 
     // Buscar usuarios por nombre de usuario
-    public List<UserAccount> searchByUsername(String username) {
-        return userAccountRepository.findByUsernameContainingIgnoreCase(username);
+    public List<UserDTO> searchByUsername(String username) {
+        return userAccountRepository.findByUsernameContainingIgnoreCase(username)
+                .stream()
+                .map(user -> {
+                    UserDTO userDTO = new UserDTO();
+                    userDTO.setFirstName(user.getFirstName());
+                    userDTO.setLastName(user.getLastName());
+                    userDTO.setUsername(user.getUsernameField()); // Asegúrate de que obtenga el nombre de usuario correcto
+                    return userDTO;
+                })
+                .collect(Collectors.toList());
     }
+
 
 }

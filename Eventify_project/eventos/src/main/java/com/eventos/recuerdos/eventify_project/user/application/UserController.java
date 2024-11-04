@@ -24,18 +24,21 @@ public class UserController {
 
     @GetMapping("/profile")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<String> userProfile(Principal principal) {
-        return ResponseEntity.ok("Perfil de: " + principal.getName());
+    public ResponseEntity<UserDTO> userProfile(Principal principal) {
+        UserDTO userDTO = userAccountService.userProfile(principal.getName());
+        return ResponseEntity.ok(userDTO);
     }
+
 
 
     //busqueda de usuarios
     @GetMapping("/search")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<List<UserAccount>> searchUsers(@RequestParam String username) {
-        List<UserAccount> userAccounts = userAccountService.searchByUsername(username);
-        return ResponseEntity.ok(userAccounts);
+    public ResponseEntity<List<UserDTO>> searchUsers(@RequestParam String username) {
+        List<UserDTO> userDTOs = userAccountService.searchByUsername(username);
+        return ResponseEntity.ok(userDTOs);
     }
+
 
 
 
