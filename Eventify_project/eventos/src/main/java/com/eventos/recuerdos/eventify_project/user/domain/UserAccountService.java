@@ -50,13 +50,21 @@ public class UserAccountService {
     public UserDTO updateUser(Long id, UserDTO userDTO) {
         return userAccountRepository.findById(id)
                 .map(user -> {
+                    user.setFirstName(userDTO.getFirstName());
+                    user.setLastName(userDTO.getLastName());
                     user.setUsername(userDTO.getUsername());
-                    user.setEmail(userDTO.getEmail());
-                    user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+                    // Guarda los cambios y devuelve el objeto actualizado mapeado a UserDTO
                     return modelMapper.map(userAccountRepository.save(user), UserDTO.class);
                 })
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
     }
+
+    public boolean isAuthorized(Long userId, String email) {
+        return userAccountRepository.findById(userId)
+                .map(user -> user.getEmail().equals(email))
+                .orElse(false);
+    }
+
 
     // Eliminar usuario
     public void deleteUser(Long id) {

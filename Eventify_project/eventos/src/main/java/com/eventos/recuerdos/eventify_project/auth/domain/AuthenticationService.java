@@ -2,6 +2,7 @@ package com.eventos.recuerdos.eventify_project.auth.domain;
 
 import com.eventos.recuerdos.eventify_project.HelloEmailEvent;
 import com.eventos.recuerdos.eventify_project.auth.dto.JwtAuthenticationResponse;
+import com.eventos.recuerdos.eventify_project.auth.dto.LoginResponseDto;
 import com.eventos.recuerdos.eventify_project.auth.dto.SigninRequest;
 import com.eventos.recuerdos.eventify_project.auth.dto.UserSignupRequestDto;
 import com.eventos.recuerdos.eventify_project.securityconfig.domain.JwtService;
@@ -48,8 +49,9 @@ public class AuthenticationService {
 
         // Generar token JWT
         var jwt = jwtService.generateToken(user);
-        JwtAuthenticationResponse response = new JwtAuthenticationResponse();
-        response.setToken(jwt);
+
+        // Crear respuesta con el token y el userId
+        JwtAuthenticationResponse response = new JwtAuthenticationResponse(jwt, user.getId());
 
         // Publicar el evento para enviar el correo de bienvenida
         applicationEventPublisher.publishEvent(new HelloEmailEvent(user.getEmail()));
@@ -57,15 +59,14 @@ public class AuthenticationService {
         return response;
     }
 
-    public JwtAuthenticationResponse signin(SigninRequest request) {
+
+    public LoginResponseDto signin(SigninRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
         var user = userRepository.findByEmail(request.getEmail());
         var jwt = jwtService.generateToken(user);
 
-        JwtAuthenticationResponse response = new JwtAuthenticationResponse();
-        response.setToken(jwt);
-
-        return response;
+        return new LoginResponseDto(jwt);
     }
+
 }
