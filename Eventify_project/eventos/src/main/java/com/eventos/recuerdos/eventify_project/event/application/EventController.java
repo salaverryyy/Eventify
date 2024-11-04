@@ -1,6 +1,7 @@
 package com.eventos.recuerdos.eventify_project.event.application;
 
 import com.eventos.recuerdos.eventify_project.event.domain.EventService;
+import com.eventos.recuerdos.eventify_project.event.dto.EventBasicDto;
 import com.eventos.recuerdos.eventify_project.event.dto.EventDTO;
 import com.eventos.recuerdos.eventify_project.invitation.domain.InvitationService;
 import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationDTO;
@@ -10,8 +11,10 @@ import com.eventos.recuerdos.eventify_project.user.dto.UserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -33,10 +36,14 @@ public class EventController {
 
     //Crear un nuevo evento
     @PostMapping
-    public ResponseEntity<EventDTO> createEvent(@RequestBody EventDTO eventDTO) {
-        EventDTO createdEvent = eventService.createEvent(eventDTO);
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<EventBasicDto> createEvent(@RequestBody EventDTO eventDTO, Principal principal) {
+        // Extraer el ID del usuario desde el token (por medio del email o nombre del usuario en `principal`)
+        String email = principal.getName();  // Esto obtiene el email del usuario autenticado
+        EventBasicDto createdEvent = eventService.createEvent(eventDTO, email);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdEvent);
     }
+
 
     //Actualizar los detalles del evento
     @PatchMapping("/{id}")

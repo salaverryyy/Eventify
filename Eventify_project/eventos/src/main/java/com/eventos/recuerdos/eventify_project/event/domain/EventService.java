@@ -1,5 +1,6 @@
 package com.eventos.recuerdos.eventify_project.event.domain;
 
+import com.eventos.recuerdos.eventify_project.event.dto.EventBasicDto;
 import com.eventos.recuerdos.eventify_project.event.dto.EventDTO;
 import com.eventos.recuerdos.eventify_project.event.infrastructure.EventRepository;
 import com.eventos.recuerdos.eventify_project.exception.ResourceNotFoundException;
@@ -40,11 +41,24 @@ public class EventService {
     }
 
     // Crear un nuevo evento
-    public EventDTO createEvent(EventDTO eventDTO) {
+    public EventBasicDto createEvent(EventDTO eventDTO, String email) {
+        // Buscar el usuario por email
+        UserAccount organizer = userAccountRepository.findByEmail(email);
+        if (organizer == null) {
+            throw new ResourceNotFoundException("Usuario no encontrado con el email: " + email);
+        }
+
+        // Mapear el DTO a la entidad Event
         Event event = modelMapper.map(eventDTO, Event.class);
+        event.setOrganizer(organizer);  // Asignar el organizador al evento
+
+        // Guardar el evento y mapearlo a EventBasicDTO
         Event savedEvent = eventRepository.save(event);
-        return modelMapper.map(savedEvent, EventDTO.class);
+        return modelMapper.map(savedEvent, EventBasicDto.class);
     }
+
+
+
 
     // Actualizar un evento existente
     public EventDTO updateEvent(Long id, EventDTO eventDTO) {
@@ -56,13 +70,6 @@ public class EventService {
         event.setEventName(eventDTO.getEventName());
         event.setEventDescription(eventDTO.getEventDescription());
         event.setEventDate(eventDTO.getEventDate());
-
-        // Actualizar el organizador solo si se proporciona un organizerId válido
-        if (eventDTO.getOrganizerId() != null) {
-            UserAccount organizer = userAccountRepository.findById(eventDTO.getOrganizerId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Organizador no encontrado con ID: " + eventDTO.getOrganizerId()));
-            event.setOrganizer(organizer);
-        }
 
         // Guarda el evento actualizado
         Event updatedEvent = eventRepository.save(event);
