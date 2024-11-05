@@ -51,7 +51,7 @@ public class EmailService {
 
             // Configuración del contexto para Thymeleaf
             Context context = new Context();
-            context.setVariable("albumLink", albumLink); // Solo pasamos albumLink
+            context.setVariable("albumLink", albumLink);
 
             // Procesa el contenido del HTML usando Thymeleaf
             String contentHTML = templateEngine.process("invitation-email-template", context);
