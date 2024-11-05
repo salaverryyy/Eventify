@@ -2,7 +2,7 @@ package com.eventos.recuerdos.eventify_project.user.domain;
 
 import com.eventos.recuerdos.eventify_project.event.infrastructure.EventRepository;
 import com.eventos.recuerdos.eventify_project.exception.ResourceNotFoundException;
-import com.eventos.recuerdos.eventify_project.invitation.domain.InvitationDto;
+import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationDto;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
 import com.eventos.recuerdos.eventify_project.memory.infrastructure.MemoryRepository;
 import com.eventos.recuerdos.eventify_project.notification.dto.NotificationDTO;
