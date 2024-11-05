@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
     <title>Invitación al Álbum Virtual</title>
     <style>
         body {
@@ -21,8 +20,13 @@
         .header {
             text-align: center;
             padding: 20px;
-            background-color: #ff6d33; /* Fondo naranja */
-            border-bottom: 2px solid #000000;
+            background-color: #ff6d33;
+            border-bottom: 2px solid #4CAF50;
+        }
+        .header h1 {
+            color: white; /* Texto en blanco */
+            font-size: 24px;
+            font-weight: bold;
         }
         .content {
             text-align: center;
@@ -31,28 +35,25 @@
             border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
-        .content h1 {
-            color: #000000;
-            font-size: 24px;
-            font-weight: bold;
-        }
-        .content p {
-            font-size: 16px;
-            color: #555555;
-            line-height: 1.5;
-        }
-        .qr-code-container {
-            text-align: center;
-            margin-top: 20px;
-            padding: 20px;
-            background-color: #ff6d33; /* Fondo naranja */
+        .qr-container {
+            background-color: #ffffff;
+            border: 2px solid black; /* Borde negro */
             border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin: 20px auto;
+            max-width: 300px;
         }
         .footer {
-            margin-top: 30px;
             text-align: center;
-            color: #888888;
-            font-size: 14px;
+            background-color: #ff6d33;
+            padding: 10px;
+            border-radius: 8px;
+            max-width: 150px;
+            margin: 20px auto;
+        }
+        .footer img {
+            max-width: 100%;
         }
     </style>
 </head>
@@ -65,15 +66,13 @@
         <p>Haz clic en el siguiente enlace para acceder al álbum:</p>
         <a th:href="${albumLink}">Acceder al álbum</a>
         <p>O escanea el siguiente código QR:</p>
-    </div>
-    <div class="qr-code-container">
-        <!-- Código QR generado desde la URL de la API con el enlace del álbum -->
-        <img th:src="'https://api.qrserver.com/v1/create-qr-code/?data=' + ${albumLink} + '&size=300x300'" alt="Código QR" style="width: 150px; height: 150px;"/>
+        <div class="qr-container">
+            <img th:src="'https://api.qrserver.com/v1/create-qr-code/?data=' + ${albumLink} + '&size=300x300'" alt="Código QR"/>
+        </div>
+        <p>¡Esperamos que disfrutes del contenido!</p>
     </div>
     <div class="footer">
-        <!-- Logo de Eventify al final del correo -->
-        <img src="cid:logoImage" alt="Eventify Logo" style="width: 100px; height: 100px; margin-top: 20px;"/>
-        <p>&copy; 2024 Eventify. Todos los derechos reservados.</p>
+        <img src="cid:logoImage" alt="Eventify Logo"/>
     </div>
 </div>
 </body>
