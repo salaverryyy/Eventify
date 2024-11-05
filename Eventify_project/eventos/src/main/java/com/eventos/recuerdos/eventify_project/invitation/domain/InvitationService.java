@@ -5,6 +5,7 @@ import com.eventos.recuerdos.eventify_project.exception.ResourceNotFoundExceptio
 import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationByQrDto;
 import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationStatusDto;
 import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationByLinkDto;
+import com.eventos.recuerdos.eventify_project.invitation.domain.InvitationStatus;
 import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,17 +68,21 @@ public class InvitationService {
     }
 
     public void acceptInvitation(Long id) {
-        updateInvitationStatus(id, InvitationStatusDto.ACCEPTED);
+        InvitationStatusDto statusDto = new InvitationStatusDto();
+        statusDto.setInvitationStatus(InvitationStatus.ACCEPTED);
+        updateInvitationStatus(id, statusDto);
     }
 
     public void rejectInvitation(Long id) {
-        updateInvitationStatus(id, InvitationStatusDto.REJECTED);
+        InvitationStatusDto statusDto = new InvitationStatusDto();
+        statusDto.setInvitationStatus(InvitationStatus.REJECTED);
+        updateInvitationStatus(id, statusDto);
     }
 
-    private void updateInvitationStatus(Long id, InvitationStatusDto status) {
+    private void updateInvitationStatus(Long id, InvitationStatusDto statusDto) {
         Invitation invitation = invitationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Invitación no encontrada con id: " + id));
-        invitation.setStatus(status);
+        invitation.setStatus(statusDto.getInvitationStatus());
         invitationRepository.save(invitation);
     }
 
@@ -168,7 +173,7 @@ public class InvitationService {
         invitation.setUsuarioInvitador(userAccount);
         invitation.setEvent(event);
         invitation.setGuestEmail(guestEmail);
-        invitation.setStatus(InvitationStatusDto.PENDING);
+        invitation.setStatus(InvitationStatus.PENDING);
         return invitation;
     }
 
