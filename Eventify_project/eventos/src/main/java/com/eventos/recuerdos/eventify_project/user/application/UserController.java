@@ -1,6 +1,6 @@
 package com.eventos.recuerdos.eventify_project.user.application;
 
-import com.eventos.recuerdos.eventify_project.invitation.domain.InvitationDto;
+import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationDto;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
 import com.eventos.recuerdos.eventify_project.notification.dto.NotificationDTO;
 import com.eventos.recuerdos.eventify_project.user.domain.UserAccountService;

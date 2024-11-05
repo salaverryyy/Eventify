@@ -4,7 +4,7 @@ import com.eventos.recuerdos.eventify_project.event.domain.Event;
 import com.eventos.recuerdos.eventify_project.exception.ResourceNotFoundException;
 import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationByQrDto;
 import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationStatusDto;
-import com.eventos.recuerdos.eventify_project.invitation.domain.InvitationByLinkDto;
+import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationByLinkDto;
 import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
-import com.eventos.recuerdos.eventify_project.invitation.domain.InvitationDto;
+import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationDto;
 
 import java.util.ArrayList;
 import java.util.Base64;

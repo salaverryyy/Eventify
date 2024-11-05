@@ -1,8 +1,8 @@
 package com.eventos.recuerdos.eventify_project.invitation.application;
 
-import com.eventos.recuerdos.eventify_project.invitation.domain.InvitationByLinkDto;
+import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationByLinkDto;
 import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationByQrDto;
-import com.eventos.recuerdos.eventify_project.invitation.domain.InvitationDto;
+import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationDto;
 import com.eventos.recuerdos.eventify_project.invitation.domain.InvitationService;
 import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationStatusDto;
 import jakarta.mail.MessagingException;
