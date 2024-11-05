@@ -124,7 +124,7 @@ A continuación, se muestra una lista de los principales endpoints disponibles e
 
 ## Agradecimientos 🫶
 
-Queremos agradecer a todos los que apoyaron este proyecto con sus pruebas y retroalimentación valiosa. Un agradecimiento especial a nuestro profesor por su orientación y apoyo.
+Queremos agradecer a todos los que apoyaron este proyecto con sus pruebas y retroalimentación valiosa. Un agradecimiento especial a los TA del curso y al profesor que nos acompañó durante esta aventura.
 
 ## Licencia 📄
 
