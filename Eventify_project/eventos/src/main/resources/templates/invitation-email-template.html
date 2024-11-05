@@ -24,7 +24,7 @@
             border-bottom: 2px solid #4CAF50;
         }
         .header h1 {
-            color: white; /* Texto en blanco */
+            color: white;
             font-size: 24px;
             font-weight: bold;
         }
@@ -37,7 +37,7 @@
         }
         .qr-container {
             background-color: #ffffff;
-            border: 2px solid black; /* Borde negro */
+            border: 2px solid black;
             border-radius: 8px;
             padding: 20px;
             text-align: center;
@@ -45,16 +45,23 @@
             max-width: 300px;
         }
         .footer {
-            text-align: center;
             background-color: #ff6d33;
-            padding: 10px;
-            border-radius: 8px;
-            max-width: 100%;
+            padding: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
+            border-radius: 8px;
+            max-width: 100%;
             margin: 20px auto;
-            padding: 20px 0;
+        }
+        .logo-background {
+            background-color: white;
+            padding: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
         .footer img {
             max-width: 100px;
@@ -76,8 +83,7 @@
         <p>¡Esperamos que disfrutes del contenido!</p>
     </div>
     <div class="footer">
-        <img src="cid:logoImage" alt="Eventify Logo"/>
-    </div>
-</div>
-</body>
-</html>
+        <div class="logo-background">
+            <img src="cid:logoImage" alt="Eventify Logo"/>
+        </div>
+
