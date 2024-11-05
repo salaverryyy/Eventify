@@ -29,7 +29,7 @@ public class Invitation {
     private String guestEmail;  // Correo del invitado (para invitados no registrados)
 
     @Enumerated(EnumType.STRING)
-    private InvitationStatusDto status;  // Estado de la invitación
+    private InvitationStatus status;  // Estado de la invitación
 
     // Relación con el usuario que envía la invitación
     @ManyToOne(fetch = FetchType.LAZY)
