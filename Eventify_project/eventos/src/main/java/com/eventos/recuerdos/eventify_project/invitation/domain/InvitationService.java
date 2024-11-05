@@ -8,6 +8,7 @@ import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationByLinkDto
 import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,11 @@ import org.springframework.web.client.RestTemplate;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationDto;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.ClassPathResource;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
+import com.eventos.recuerdos.eventify_project.InvitationEmailEvent;
 
 import java.util.ArrayList;
 import java.util.Base64;
@@ -30,6 +36,12 @@ public class InvitationService {
 
     @Autowired
     private JavaMailSender mailSender;
+
+    @Autowired
+    private TemplateEngine templateEngine;
+
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
 
     private static final String BASE_URL = "http://localhost:3000/album/";
 
@@ -71,15 +83,21 @@ public class InvitationService {
 
     public List<InvitationDto> sendInvitationByQr(InvitationByQrDto dto) throws MessagingException {
         List<InvitationDto> invitations = new ArrayList<>();
+        String albumLink = generateAlbumLink(dto.getEventId());
+
         for (String guestEmail : dto.getGuestEmails()) {
             Invitation invitation = createInvitation(dto.getUserId(), dto.getEventId(), guestEmail);
-            invitation.setQrCode(generateQRCode(generateAlbumLink(dto.getEventId())));
+            String qrCode = generateQRCode(albumLink);
+            invitation.setQrCode(qrCode);
 
-            sendInvitationEmail(guestEmail, dto.getEventId());
             invitations.add(mapAndSaveInvitation(invitation));
+
+            // Publicar el evento de correo de invitación
+            eventPublisher.publishEvent(new InvitationEmailEvent(guestEmail, qrCode, albumLink));
         }
         return invitations;
     }
+
 
     public List<InvitationDto> sendInvitationByLink(InvitationByLinkDto dto) throws MessagingException {
         List<InvitationDto> invitations = new ArrayList<>();
@@ -106,18 +124,23 @@ public class InvitationService {
         return Base64.getEncoder().encodeToString(qrImageBytes);
     }
 
-    private void sendInvitationEmail(String email, Long albumId) throws MessagingException {
-        String albumLink = generateAlbumLink(albumId);
-        String qrCode = generateQRCode(albumLink);
-
-        String content = "<p>Escanea el siguiente QR para acceder al álbum:</p>"
-                + "<img src='data:image/png;base64," + qrCode + "' alt='QR Code' />";
-
+    public void sendInvitationEmail(String email, String albumLink, String qrCode) throws MessagingException {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true);
         helper.setTo(email);
         helper.setSubject("Invitación al Álbum Virtual");
-        helper.setText(content, true);
+
+        // Crear el contexto para el template
+        Context context = new Context();
+        context.setVariable("invitationLink", albumLink);
+
+        // Generar contenido HTML usando el template
+        String htmlContent = templateEngine.process("templates/invitation-email-template.html", context);
+        helper.setText(htmlContent, true);
+
+        // Adjuntar el QR como imagen en el correo
+        byte[] qrCodeBytes = Base64.getDecoder().decode(qrCode);
+        helper.addInline("qrCode", new ByteArrayResource(qrCodeBytes), "image/png");
 
         mailSender.send(message);
     }

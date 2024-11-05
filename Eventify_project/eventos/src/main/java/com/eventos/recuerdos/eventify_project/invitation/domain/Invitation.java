@@ -20,8 +20,12 @@ public class Invitation {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    private String qrCode;  // Código QR para la invitación
-    private String invitationLink;  // Enlace de invitación
+    @Column(columnDefinition = "TEXT")
+    private String invitationLink;
+
+    @Column(columnDefinition = "TEXT")
+    private String qrCode;
+    // Enlace de invitación
     private String guestEmail;  // Correo del invitado (para invitados no registrados)
 
     @Enumerated(EnumType.STRING)
