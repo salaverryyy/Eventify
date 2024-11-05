@@ -43,4 +43,30 @@ public class EmailService {
             e.printStackTrace();
         }
     }
+
+    public void sendInvitationMessage(String to, String subject, String albumLink) {
+        try {
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+
+            // Configuración del contexto para Thymeleaf
+            Context context = new Context();
+            context.setVariable("albumLink", albumLink); // Solo pasamos albumLink
+
+            // Procesa el contenido del HTML usando Thymeleaf
+            String contentHTML = templateEngine.process("invitation-email-template", context);
+
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(contentHTML, true);
+
+            // Adjuntar el logo (opcional)
+            File imageFile = new File("C:/DAVID/CS/Ciclo4/DBP/Proyecto/LOGO/Eventify_LOGO.jpg");
+            helper.addInline("logoImage", imageFile);
+
+            mailSender.send(mimeMessage);
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
+    }
 }
