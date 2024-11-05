@@ -1,6 +1,6 @@
 package com.eventos.recuerdos.eventify_project.event.dto;
 
-import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationDTO;
+import com.eventos.recuerdos.eventify_project.invitation.domain.InvitationDto;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
 import lombok.Data;
 
@@ -14,7 +14,7 @@ public class EventDetailDTO {
     private String eventName;
     private String eventDescription;
     private LocalDate eventDate;
-    private List<InvitationDTO> invitations;
+    private List<InvitationDto> invitations;
     private List<MemoryDTO> memories;
 }
 //Transferir información detallada de un evento,

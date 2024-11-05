@@ -1,9 +1,8 @@
 package com.eventos.recuerdos.eventify_project.user.application;
 
-import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationDTO;
+import com.eventos.recuerdos.eventify_project.invitation.domain.InvitationDto;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
 import com.eventos.recuerdos.eventify_project.notification.dto.NotificationDTO;
-import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
 import com.eventos.recuerdos.eventify_project.user.domain.UserAccountService;
 import com.eventos.recuerdos.eventify_project.user.dto.UserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,8 +76,8 @@ public class UserController {
 
     //obtener las invitaciones de un usuario en especifico
     @GetMapping("/{id}/invitaciones")
-    public ResponseEntity<List<InvitationDTO>> getUserInvitations(@PathVariable Long id) {
-        List<InvitationDTO> invitations = userAccountService.getUserInvitations(id);
+    public ResponseEntity<List<InvitationDto>> getUserInvitations(@PathVariable Long id) {
+        List<InvitationDto> invitations = userAccountService.getUserInvitations(id);
         return ResponseEntity.ok(invitations);
     }
 
