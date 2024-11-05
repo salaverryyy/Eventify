@@ -2,7 +2,7 @@ package com.eventos.recuerdos.eventify_project.user.domain;
 
 import com.eventos.recuerdos.eventify_project.event.infrastructure.EventRepository;
 import com.eventos.recuerdos.eventify_project.exception.ResourceNotFoundException;
-import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationDTO;
+import com.eventos.recuerdos.eventify_project.invitation.domain.InvitationDto;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
 import com.eventos.recuerdos.eventify_project.memory.infrastructure.MemoryRepository;
 import com.eventos.recuerdos.eventify_project.notification.dto.NotificationDTO;
@@ -133,14 +133,14 @@ public class UserAccountService {
     }
 
     // Obtener invitaciones del usuario
-    public List<InvitationDTO> getUserInvitations(Long userId) {
+    public List<InvitationDto> getUserInvitations(Long userId) {
         return userAccountRepository.findById(userId)
                 .map(user -> Stream.concat(
                                         user.getInvitationsSent().stream(),
                                         user.getInvitationsReceived().stream()
                                 )
                                 .map(invitation -> {
-                                    InvitationDTO dto = modelMapper.map(invitation, InvitationDTO.class);
+                                    InvitationDto dto = modelMapper.map(invitation, InvitationDto.class);
                                     dto.setUserId(user.getId());
                                     return dto;
                                 })

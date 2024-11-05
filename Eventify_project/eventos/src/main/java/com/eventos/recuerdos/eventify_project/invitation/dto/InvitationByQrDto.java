@@ -2,10 +2,11 @@ package com.eventos.recuerdos.eventify_project.invitation.dto;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
-public class InvitationByLinkDTO {
+public class InvitationByQrDto {
     private Long userId;
     private Long eventId;
-    private String invitationLink;
-    private String guestEmail;
+    private List<String> guestEmails;  // Lista de correos de los invitados
 }

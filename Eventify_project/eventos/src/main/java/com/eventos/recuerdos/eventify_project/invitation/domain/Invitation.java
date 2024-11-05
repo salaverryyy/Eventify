@@ -1,6 +1,7 @@
 package com.eventos.recuerdos.eventify_project.invitation.domain;
 
 import com.eventos.recuerdos.eventify_project.event.domain.Event;
+import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationStatusDto;
 import com.eventos.recuerdos.eventify_project.memory.domain.Memory;
 import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
 import jakarta.persistence.*;
@@ -24,7 +25,7 @@ public class Invitation {
     private String guestEmail;  // Correo del invitado (para invitados no registrados)
 
     @Enumerated(EnumType.STRING)
-    private InvitationStatus status;  // Estado de la invitación
+    private InvitationStatusDto status;  // Estado de la invitación
 
     // Relación con el usuario que envía la invitación
     @ManyToOne(fetch = FetchType.LAZY)
