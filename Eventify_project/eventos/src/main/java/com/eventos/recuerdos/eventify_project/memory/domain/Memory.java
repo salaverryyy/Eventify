@@ -25,8 +25,11 @@ public class Memory {
     private String description; // Descripción del recuerdo
     private LocalDateTime memoryCreationDate; // Fecha de creación del recuerdo
 
-    @Column(unique = true, nullable = false)
+    @Column(unique = true, nullable = false, length = 8)
     private String accessCode;
+
+    @Column(unique = true, nullable = false)
+    private String albumLink;
 
     // Relación Many-to-One con User (usuario creador del recuerdo)
     @ManyToOne(fetch = FetchType.LAZY)

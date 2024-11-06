@@ -59,9 +59,6 @@ public class EventController {
     }
 
 
-
-
-
     //Eliminar un evento
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteEvent(@PathVariable Long id) {

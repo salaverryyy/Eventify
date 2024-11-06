@@ -76,9 +76,13 @@ public class InvitationService {
             throw new ResourceNotFoundException("Usuario no encontrado con correo: " + senderEmail);
         }
 
-        // Generar un enlace único para el álbum del evento (usando el mismo enlace para todos los invitados)
-        String uniqueToken = UUID.randomUUID().toString();  // Esto puede hacerse solo una vez por evento en producción
-        String albumLink = BASE_URL + "/album/" + uniqueToken;
+        // Recuperar el Memory asociado usando el accessCode
+        Memory memory = memoryRepository.findByAccessCode(invitationRequestDto.getAccessCode());
+        if (memory == null) {
+            throw new ResourceNotFoundException("Memory no encontrado con código de acceso: " + invitationRequestDto.getAccessCode());
+        }
+
+        String albumLink = memory.getAlbumLink();  // Obtenemos el enlace del álbum ya asignado en el Memory
 
         List<InvitationDto> invitations = new ArrayList<>();
 
@@ -89,8 +93,7 @@ public class InvitationService {
             }
 
             // Crear y guardar la invitación
-            InvitationDto invitationDto = createAndSaveInvitation(invitedUser.getEmail(), sender, albumLink);  // Pasar el mismo link
-
+            InvitationDto invitationDto = createAndSaveInvitation(invitedUser.getEmail(), sender, albumLink);
             invitations.add(invitationDto);
 
             // Emitir el evento para enviar el correo
@@ -105,25 +108,25 @@ public class InvitationService {
         return invitations;
     }
 
-
     private InvitationDto createAndSaveInvitation(String guestEmail, UserAccount usuarioInvitador, String albumLink) {
         Invitation invitation = new Invitation();
         invitation.setGuestEmail(guestEmail);
         invitation.setUsuarioInvitador(usuarioInvitador);
         invitation.setStatus(InvitationStatus.PENDING);
+        invitation.setAlbumLink(albumLink);  // Asegurarse de que el enlace del álbum esté asignado aquí
 
         Invitation savedInvitation = invitationRepository.save(invitation);
         InvitationDto invitationDto = modelMapper.map(savedInvitation, InvitationDto.class);
 
-        // Generar código QR en base64 para el enlace del álbum
+        // Generar el código QR en base64 para el enlace del álbum
         String qrCode = generateQRCode(albumLink);
         invitationDto.setQrCode(qrCode);
-
-        // Agregar el mismo enlace del álbum a todas las invitaciones del evento
-        invitationDto.setAlbumLink(albumLink);
+        invitationDto.setAlbumLink(albumLink);  // Asegurar que el albumLink esté en el DTO de respuesta
 
         return invitationDto;
     }
+
+
 
 
     private String generateAlbumLink() {

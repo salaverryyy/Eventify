@@ -21,7 +21,7 @@ public class Invitation {
     private Long id;
 
     @Column(columnDefinition = "TEXT")
-    private String invitationLink;
+    private String albumLink;
 
     @Column(columnDefinition = "TEXT")
     private String qrCode;

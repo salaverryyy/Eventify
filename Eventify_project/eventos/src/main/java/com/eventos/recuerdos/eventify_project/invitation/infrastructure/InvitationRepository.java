@@ -16,7 +16,7 @@ public interface InvitationRepository extends JpaRepository<Invitation, Long> {
     Optional<Invitation> findByQrCode(String qrCode);
 
 
-    @Query("SELECT i FROM Invitation i WHERE i.invitationLink LIKE %:token%")
+    @Query("SELECT i FROM Invitation i WHERE i.albumLink LIKE %:token%")
     Optional<Invitation> findByInvitationLinkContaining(@Param("token") String token);
 
 }
