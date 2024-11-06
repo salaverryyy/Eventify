@@ -2,6 +2,7 @@ package com.eventos.recuerdos.eventify_project.user.application;
 
 import com.eventos.recuerdos.eventify_project.invitation.domain.Invitation;
 import com.eventos.recuerdos.eventify_project.publication.domain.Publication;
+import com.eventos.recuerdos.eventify_project.publication.dto.PublicationDTO;
 import com.eventos.recuerdos.eventify_project.user.domain.AdminService;
 import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
 import org.springframework.http.ResponseEntity;
@@ -36,8 +37,8 @@ public class AdminController {
     }
 
     @GetMapping("/publications")
-    public ResponseEntity<List<Publication>> getAllPublications() {
-        List<Publication> publications = adminService.getAllPublications();
+    public ResponseEntity<List<PublicationDTO>> getAllPublications() {
+        List<PublicationDTO> publications = adminService.getAllPublications();
         return ResponseEntity.ok(publications);
     }
 }
