@@ -17,6 +17,7 @@ import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -42,9 +43,17 @@ public class MemoryService {
         return code.toString();
     }
 
+    private String generateAlbumLink() {
+        // Generar un enlace único para el álbum usando UUID
+        String uniqueToken = UUID.randomUUID().toString();
+        return "http://localhost:3000/album/" + uniqueToken; // Ajusta el enlace base según tus necesidades
+    }
+
     public MemoryDTO getMemoryById(Long id) {
-        Memory memory = memoryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No se encontró el recuerdo con ID: " + id));
+        Memory memory = memoryRepository.findById(id).orElse(null);
+        if (memory == null) {
+            throw new ResourceNotFoundException("No se encontró el recuerdo con ID: " + id);
+        }
         return modelMapper.map(memory, MemoryDTO.class);
     }
 
@@ -64,14 +73,20 @@ public class MemoryService {
         memory.setUserAccount(userAccount);
         memory.setMemoryCreationDate(LocalDateTime.now());
         memory.setAccessCode(generateAccessCode()); // Asignar código de acceso único
+
+        // Generar y asignar album_link
+        memory.setAlbumLink(generateAlbumLink());
+
         Memory savedMemory = memoryRepository.save(memory);
 
         return modelMapper.map(savedMemory, MemoryDTO.class);
     }
 
     public MemoryDTO updateMemory(Long id, MemoryDTO memoryDTO) {
-        Memory memory = memoryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No se encontró el recuerdo con ID: " + id));
+        Memory memory = memoryRepository.findById(id).orElse(null);
+        if (memory == null) {
+            throw new ResourceNotFoundException("No se encontró el recuerdo con ID: " + id);
+        }
         memory.setMemoryName(memoryDTO.getMemoryName());
         memory.setDescription(memoryDTO.getDescription());
         memoryRepository.save(memory);
@@ -86,8 +101,10 @@ public class MemoryService {
     }
 
     public MemoryWithPublicationsDTO getMemoryWithPublications(Long id) {
-        Memory memory = memoryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No se encontró el recuerdo con ID: " + id));
+        Memory memory = memoryRepository.findById(id).orElse(null);
+        if (memory == null) {
+            throw new ResourceNotFoundException("No se encontró el recuerdo con ID: " + id);
+        }
         List<PublicationDTO> publications = publicationRepository.findByMemoryId(id)
                 .stream()
                 .map(p -> modelMapper.map(p, PublicationDTO.class))
