@@ -132,23 +132,6 @@ public class UserAccountService {
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + userId));
     }
 
-    // Obtener invitaciones del usuario
-    public List<InvitationDto> getUserInvitations(Long userId) {
-        return userAccountRepository.findById(userId)
-                .map(user -> Stream.concat(
-                                        user.getInvitationsSent().stream(),
-                                        user.getInvitationsReceived().stream()
-                                )
-                                .map(invitation -> {
-                                    InvitationDto dto = modelMapper.map(invitation, InvitationDto.class);
-                                    dto.setUserId(user.getId());
-                                    return dto;
-                                })
-                                .collect(Collectors.toList())
-                )
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + userId));
-    }
-
 
     // Obtener notificaciones del usuario
     public List<NotificationDTO> getUserNotifications(Long userId) {

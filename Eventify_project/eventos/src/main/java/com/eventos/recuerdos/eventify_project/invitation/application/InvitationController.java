@@ -1,16 +1,17 @@
 package com.eventos.recuerdos.eventify_project.invitation.application;
 
-import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationByLinkDto;
-import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationByQrDto;
-import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationDto;
+import com.eventos.recuerdos.eventify_project.exception.ResourceNotFoundException;
+import com.eventos.recuerdos.eventify_project.invitation.dto.*;
 import com.eventos.recuerdos.eventify_project.invitation.domain.InvitationService;
-import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationStatusDto;
+import com.eventos.recuerdos.eventify_project.memory.domain.Memory;
+import com.eventos.recuerdos.eventify_project.memory.infrastructure.MemoryRepository;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -19,6 +20,9 @@ public class InvitationController {
 
     @Autowired
     private InvitationService invitationService;
+
+    @Autowired
+    private MemoryRepository memoryRepository;
 
     // Obtener el estado de una invitación
     @GetMapping("/{id}")
@@ -43,24 +47,24 @@ public class InvitationController {
 
     // Enviar invitación por QR
     @PostMapping("/sendByQr")
-    public ResponseEntity<List<InvitationDto>> sendInvitationByQr(@RequestBody InvitationByQrDto invitationByQrDto) throws MessagingException {
-        List<InvitationDto> createdInvitations = invitationService.sendInvitationByQr(invitationByQrDto);
+    public ResponseEntity<List<InvitationDto>> sendInvitationByQr(@RequestBody InvitationRequestDto invitationRequestDto, Principal principal) throws MessagingException {
+        List<InvitationDto> createdInvitations = invitationService.sendInvitationByQr(invitationRequestDto, principal);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdInvitations);
     }
 
-    // Enviar invitación por Link
-    @PostMapping("/sendByLink")
-    public ResponseEntity<List<InvitationDto>> sendInvitationByLink(@RequestBody InvitationByLinkDto invitationByLinkDto) throws MessagingException {
-        List<InvitationDto> invitations = invitationService.sendInvitationByLink(invitationByLinkDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(invitations);
+
+    // Verificar código de acceso de un Memory
+    @GetMapping("/verify-access-code/{code}")
+    public ResponseEntity<String> verifyAccessCode(@PathVariable String code) {
+        Memory memory = memoryRepository.findByAccessCode(code);
+
+        if (memory == null) {
+            throw new ResourceNotFoundException("Código de acceso no válido");
+        }
+
+        return ResponseEntity.ok("Código de acceso válido para el álbum con ID: " + memory.getId());
     }
 
-    // Acceder a una invitación mediante un enlace (token)
-    @GetMapping("/link/{token}")
-    public ResponseEntity<InvitationDto> getInvitationByLink(@PathVariable String token) {
-        InvitationDto invitation = invitationService.getInvitationByLink(token);
-        return ResponseEntity.ok(invitation);
-    }
 
     // Eliminar invitación por Id
     @DeleteMapping("/{id}")

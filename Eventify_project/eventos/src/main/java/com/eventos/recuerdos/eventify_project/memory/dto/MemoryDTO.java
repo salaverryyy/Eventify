@@ -23,6 +23,7 @@ public class MemoryDTO {
 
     private LocalDateTime memoryCreationDate;
 
+    private String accessCode;
 }
 
 //Maneja la información de los recuerdos (álbumes virtuales), sin

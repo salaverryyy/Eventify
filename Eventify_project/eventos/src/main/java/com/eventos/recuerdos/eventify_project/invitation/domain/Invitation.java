@@ -31,6 +31,7 @@ public class Invitation {
     @Enumerated(EnumType.STRING)
     private InvitationStatus status;  // Estado de la invitación
 
+
     // Relación con el usuario que envía la invitación
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

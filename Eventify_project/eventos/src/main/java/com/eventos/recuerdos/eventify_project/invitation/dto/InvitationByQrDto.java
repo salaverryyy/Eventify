@@ -6,7 +6,6 @@ import java.util.List;
 
 @Data
 public class InvitationByQrDto {
-    private Long userId;
-    private Long eventId;
-    private List<String> guestEmails;  // Lista de correos de los invitados
+    private Long userId;  // ID del usuario que envía la invitación
+    private List<String> usernames;  // Lista de nombres de usuario de los invitados
 }
