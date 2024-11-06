@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,8 +29,18 @@ public class MemoryService {
     private UserAccountRepository userAccountRepository;
 
     @Autowired
-
     private ModelMapper modelMapper;
+
+    private String generateAccessCode() {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        StringBuilder code = new StringBuilder();
+        Random rnd = new Random();
+        while (code.length() < 8) {
+            int index = (int) (rnd.nextFloat() * chars.length());
+            code.append(chars.charAt(index));
+        }
+        return code.toString();
+    }
 
     public MemoryDTO getMemoryById(Long id) {
         Memory memory = memoryRepository.findById(id)
@@ -38,7 +49,7 @@ public class MemoryService {
     }
 
     public MemoryDTO createMemory(MemoryDTO memoryDTO, Principal principal) {
-        String userEmail = principal.getName(); // Obtener el email del usuario desde el token
+        String userEmail = principal.getName();
         UserAccount userAccount = userAccountRepository.findByEmail(userEmail);
 
         if (userAccount == null) {
@@ -52,13 +63,11 @@ public class MemoryService {
         Memory memory = modelMapper.map(memoryDTO, Memory.class);
         memory.setUserAccount(userAccount);
         memory.setMemoryCreationDate(LocalDateTime.now());
+        memory.setAccessCode(generateAccessCode()); // Asignar código de acceso único
         Memory savedMemory = memoryRepository.save(memory);
 
-        // Retornar el DTO del Memory guardado
         return modelMapper.map(savedMemory, MemoryDTO.class);
     }
-
-
 
     public MemoryDTO updateMemory(Long id, MemoryDTO memoryDTO) {
         Memory memory = memoryRepository.findById(id)
@@ -86,7 +95,6 @@ public class MemoryService {
         return new MemoryWithPublicationsDTO(modelMapper.map(memory, MemoryDTO.class), publications);
     }
 
-    //Obtener todas los Memory credos
     public List<MemoryDTO> getAllMemories() {
         List<Memory> memories = memoryRepository.findAll();
         return memories.stream()

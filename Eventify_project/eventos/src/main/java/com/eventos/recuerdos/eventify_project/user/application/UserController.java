@@ -74,13 +74,6 @@ public class UserController {
         return ResponseEntity.ok(memories);
     }
 
-    //obtener las invitaciones de un usuario en especifico
-    @GetMapping("/{id}/invitaciones")
-    public ResponseEntity<List<InvitationDto>> getUserInvitations(@PathVariable Long id) {
-        List<InvitationDto> invitations = userAccountService.getUserInvitations(id);
-        return ResponseEntity.ok(invitations);
-    }
-
     //obtener las notificaciones de un usuario en especifico
     @GetMapping("/{id}/notificaciones")
     public ResponseEntity<List<NotificationDTO>> getUserNotifications(@PathVariable Long id) {
