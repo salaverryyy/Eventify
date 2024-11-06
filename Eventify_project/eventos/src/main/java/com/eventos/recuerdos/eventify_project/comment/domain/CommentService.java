@@ -29,7 +29,6 @@ public class CommentService {
     @Autowired
     private ModelMapper modelMapper;
 
-
     // Obtener los detalles de un comentario por ID
     public CommentDTO getCommentById(Long id) {
         Comment comment = commentRepository.findById(id)
@@ -38,14 +37,16 @@ public class CommentService {
     }
 
     // Crear un nuevo comentario en una publicación
-    public CommentDTO createComment(Long publicationId, CommentDTO commentDTO) {
+    public CommentDTO createComment(Long publicationId, CommentDTO commentDTO, String userEmail) {
         // Verificar si la publicación existe
         Publication publication = publicationRepository.findById(publicationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Publicación no encontrada con id: " + publicationId));
 
         // Verificar si el usuario existe
-        UserAccount userAccount = userAccountRepository.findById(commentDTO.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + commentDTO.getUserId()));
+        UserAccount userAccount = userAccountRepository.findByEmail(userEmail);
+        if (userAccount == null) {
+            throw new ResourceNotFoundException("Usuario no encontrado con email: " + userEmail);
+        }
 
         // Mapear el DTO a la entidad Comment
         Comment comment = modelMapper.map(commentDTO, Comment.class);
@@ -61,7 +62,6 @@ public class CommentService {
         // Retornar el DTO del comentario creado
         return modelMapper.map(comment, CommentDTO.class);
     }
-
 
     // Actualizar un comentario por ID
     public CommentDTO updateComment(Long id, CommentDTO commentDTO) {
@@ -89,7 +89,7 @@ public class CommentService {
                 .collect(Collectors.toList());
     }
 
-    //Obtener todos los comentarios creados
+    // Obtener todos los comentarios creados
     public List<CommentDTO> getAllComments() {
         List<Comment> comments = commentRepository.findAll();
         return comments.stream()
