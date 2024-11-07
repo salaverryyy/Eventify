@@ -7,6 +7,8 @@ import jakarta.validation.constraints.Size;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface MemoryRepository extends JpaRepository<Memory, Long> {
 
@@ -16,4 +18,6 @@ public interface MemoryRepository extends JpaRepository<Memory, Long> {
     void deleteByUserAccountId(Long userId);
 
     Memory findByAccessCode(String accessCode);
+
+    List<Memory> findByUserAccountId(Long userId);
 }

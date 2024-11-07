@@ -3,6 +3,7 @@ package com.eventos.recuerdos.eventify_project.memory.application;
 import com.eventos.recuerdos.eventify_project.exception.ResourceBadRequestException;
 import com.eventos.recuerdos.eventify_project.memory.domain.MemoryService;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
+import com.eventos.recuerdos.eventify_project.memory.dto.MemoryEventDto;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryWithPublicationsDTO;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +61,15 @@ public class MemoryController {
     public ResponseEntity<MemoryWithPublicationsDTO> getMemoryWithPublications(@PathVariable Long id) {
         MemoryWithPublicationsDTO memoryWithPublications = memoryService.getMemoryWithPublications(id);
         return ResponseEntity.ok(memoryWithPublications);
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<MemoryEventDto>> getMemoriesForUser(@PathVariable Long userId) {
+        List<MemoryEventDto> memories = memoryService.getMemoriesForUser(userId);
+        if (memories.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(memories);
     }
 
     //Obtener todos los memory credos
