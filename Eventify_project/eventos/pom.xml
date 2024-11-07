@@ -49,8 +49,6 @@
 			<artifactId>spring-boot-starter-validation</artifactId>
 			<version>3.3.4</version>
 		</dependency>
-
-
 		<dependency>
 			<groupId>jakarta.validation</groupId>
 			<artifactId>jakarta.validation-api</artifactId>

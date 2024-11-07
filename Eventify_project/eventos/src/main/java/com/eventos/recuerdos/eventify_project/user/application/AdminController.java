@@ -5,6 +5,7 @@ import com.eventos.recuerdos.eventify_project.publication.domain.Publication;
 import com.eventos.recuerdos.eventify_project.publication.dto.PublicationDTO;
 import com.eventos.recuerdos.eventify_project.user.domain.AdminService;
 import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
+import com.eventos.recuerdos.eventify_project.user.dto.UserAccountDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,10 +26,11 @@ public class AdminController {
     }
 
     @GetMapping("/users")
-    public ResponseEntity<List<UserAccount>> getAllUsers() {
-        List<UserAccount> userAccounts = adminService.getAllUsers();
+    public ResponseEntity<List<UserAccountDto>> getAllUsers() {
+        List<UserAccountDto> userAccounts = adminService.getAllUsers();
         return ResponseEntity.ok(userAccounts);
     }
+
 
     @GetMapping("/invitations")
     public ResponseEntity<List<Invitation>> getAllInvitations() {

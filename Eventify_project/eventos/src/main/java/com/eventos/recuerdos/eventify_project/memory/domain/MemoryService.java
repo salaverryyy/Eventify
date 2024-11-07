@@ -15,6 +15,7 @@ import com.eventos.recuerdos.eventify_project.user.infrastructure.UserAccountRep
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
@@ -63,7 +64,7 @@ public class MemoryService {
         return modelMapper.map(memory, MemoryDTO.class);
     }
 
-    public MemoryDTO createMemory(MemoryDTO memoryDTO, Principal principal) {
+    public MemoryDTO createMemory(MemoryDTO memoryDTO, MultipartFile coverPhoto, Principal principal) {
         String userEmail = principal.getName();
         UserAccount userAccount = userAccountRepository.findByEmail(userEmail);
 
@@ -79,14 +80,16 @@ public class MemoryService {
         memory.setUserAccount(userAccount);
         memory.setMemoryCreationDate(LocalDateTime.now());
         memory.setAccessCode(generateAccessCode()); // Asignar código de acceso único
-
-        // Generar y asignar album_link
         memory.setAlbumLink(generateAlbumLink());
+
+        // Simulación de URL para la imagen de portada
+        memory.setCoverPhoto("https://bucket-s3.s3.amazonaws.com/" + coverPhoto.getOriginalFilename());
 
         Memory savedMemory = memoryRepository.save(memory);
 
         return modelMapper.map(savedMemory, MemoryDTO.class);
     }
+
 
     public MemoryDTO updateMemory(Long id, MemoryDTO memoryDTO) {
         Memory memory = memoryRepository.findById(id).orElse(null);

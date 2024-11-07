@@ -26,6 +26,8 @@ public class MemoryDTO {
     private String albumLink;
 
     private String accessCode;
+
+    private String coverPhoto;
 }
 
 //Maneja la información de los recuerdos (álbumes virtuales), sin
