@@ -8,9 +8,12 @@ import com.eventos.recuerdos.eventify_project.memory.dto.MemoryWithPublicationsD
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.security.Principal;
 import java.util.List;
 
@@ -28,17 +31,26 @@ public class MemoryController {
     }
 
     @PostMapping
-    public ResponseEntity<MemoryDTO> createMemory(@Valid @RequestBody MemoryDTO memoryDTO, BindingResult result, Principal principal) {
-        if (result.hasErrors()) {
-            throw new ResourceBadRequestException("Pon los datos correctos por favor");
-        }
+    public ResponseEntity<MemoryDTO> createMemory(
+            @RequestParam("memoryName") String memoryName,
+            @RequestParam("description") String description,
+            @RequestParam("coverPhoto") MultipartFile coverPhoto,
+            Principal principal) {
 
-        // Llamar al servicio para crear el Memory, pasando el Principal
-        MemoryDTO createdMemory = memoryService.createMemory(memoryDTO, principal);
+        // Crear el DTO y asignar los valores
+        MemoryDTO memoryDTO = new MemoryDTO();
+        memoryDTO.setMemoryName(memoryName);
+        memoryDTO.setDescription(description);
+
+        // Llamar al servicio para crear el Memory, pasando el Principal y la foto
+        MemoryDTO createdMemory = memoryService.createMemory(memoryDTO, coverPhoto, principal);
 
         // Devolver la respuesta HTTP con el Memory creado
         return ResponseEntity.status(HttpStatus.CREATED).body(createdMemory);
     }
+
+
+
 
 
 
