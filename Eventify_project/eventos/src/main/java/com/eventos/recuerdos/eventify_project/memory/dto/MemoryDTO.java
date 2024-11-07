@@ -23,6 +23,8 @@ public class MemoryDTO {
 
     private LocalDateTime memoryCreationDate;
 
+    private String albumLink;
+
     private String accessCode;
 }
 

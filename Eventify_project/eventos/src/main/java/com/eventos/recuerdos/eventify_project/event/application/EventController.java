@@ -74,12 +74,6 @@ public class EventController {
     }
 
 
-    // Obtener lista de usuarios invitados a un evento
-    @GetMapping("/{eventId}/invitados")
-    public List<EventGuestDTO> getEventGuests(@PathVariable Long eventId) {
-        return eventService.getEventGuests(eventId);
-    }
-
     // Endpoint para asociar un Memory a un Event
     @PostMapping("/{eventId}/memory/{memoryId}")
     public ResponseEntity<EventDTO> addMemoryToEvent(@PathVariable Long eventId, @PathVariable Long memoryId) {

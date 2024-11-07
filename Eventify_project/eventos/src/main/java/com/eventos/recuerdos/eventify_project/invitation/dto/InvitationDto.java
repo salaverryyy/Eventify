@@ -8,5 +8,6 @@ public class InvitationDto {
     private Long id;  // Identificador único de la invitación
     private String qrCode;  // Código QR en formato base64 para el enlace del álbum
     private String guestEmail;  // Correo del invitado
-    private String albumLink;  // Enlace único de invitación al álbum
+    private String albumLink;  // Enlace al álbum
+    private String confirmationLink;  // Enlace para confirmar la invitación
 }

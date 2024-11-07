@@ -15,4 +15,6 @@ public interface LikeRepository extends JpaRepository<PublicationLike, Long> {
     List<PublicationLike> findByPublication(Publication publication);
 
     Optional<PublicationLike> findByPublicationAndUserAccount(Publication publication, UserAccount userAccount);
+
+    int countByPublication(Publication publication);
 }
