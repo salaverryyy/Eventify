@@ -35,7 +35,4 @@ public class Event {
     @JoinColumn(name = "memory_id", unique = true)
     private Memory memory;
 
-    // Lista de invitaciones del evento
-    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<Invitation> invitations = new ArrayList<>();
 }

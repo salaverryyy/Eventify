@@ -3,9 +3,7 @@ package com.eventos.recuerdos.eventify_project.invitation.application;
 import com.eventos.recuerdos.eventify_project.exception.ResourceNotFoundException;
 import com.eventos.recuerdos.eventify_project.invitation.dto.*;
 import com.eventos.recuerdos.eventify_project.invitation.domain.InvitationService;
-import com.eventos.recuerdos.eventify_project.memory.domain.Memory;
-import com.eventos.recuerdos.eventify_project.memory.infrastructure.MemoryRepository;
-import jakarta.mail.MessagingException;
+import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,9 +18,6 @@ public class InvitationController {
 
     @Autowired
     private InvitationService invitationService;
-
-    @Autowired
-    private MemoryRepository memoryRepository;
 
     // Obtener el estado de una invitación
     @GetMapping("/{id}")
@@ -47,30 +42,30 @@ public class InvitationController {
 
     // Enviar invitación por QR
     @PostMapping("/sendByQr")
-    public ResponseEntity<List<InvitationDto>> sendInvitationByQr(@RequestBody InvitationRequestDto invitationRequestDto, Principal principal) throws MessagingException {
+    public ResponseEntity<List<InvitationDto>> sendInvitationByQr(@RequestBody InvitationRequestDto invitationRequestDto, Principal principal) {
         List<InvitationDto> createdInvitations = invitationService.sendInvitationByQr(invitationRequestDto, principal);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdInvitations);
     }
 
-
-    // Verificar código de acceso de un Memory
+    // Verificar código de acceso y obtener el enlace del álbum
     @GetMapping("/verify-access-code/{code}")
     public ResponseEntity<String> verifyAccessCode(@PathVariable String code) {
-        Memory memory = memoryRepository.findByAccessCode(code);
-
-        if (memory == null) {
-            throw new ResourceNotFoundException("Código de acceso no válido");
-        }
-
-        return ResponseEntity.ok("Código de acceso válido para el álbum con ID: " + memory.getId());
+        MemoryDTO memory = invitationService.verifyAccessCode(code);
+        return ResponseEntity.ok("Código de acceso válido para el álbum en: " + memory.getAlbumLink());
     }
 
-
-    // Eliminar invitación por Id
+    // Eliminar invitación por ID
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteInvitation(@PathVariable Long id) {
         invitationService.deleteInvitation(id);
         return ResponseEntity.ok("Invitación eliminada con éxito.");
+    }
+
+    // Obtener todas las invitaciones aceptadas por memoryId
+    @GetMapping("/memory/{memoryId}/accepted")
+    public ResponseEntity<List<InvitationDto>> getAcceptedInvitations(@PathVariable Long memoryId) {
+        List<InvitationDto> acceptedInvitations = invitationService.getAcceptedInvitations(memoryId);
+        return ResponseEntity.ok(acceptedInvitations);
     }
 
     // Obtener todas las invitaciones creadas

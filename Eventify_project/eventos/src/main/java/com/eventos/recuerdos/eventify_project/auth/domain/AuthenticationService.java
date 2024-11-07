@@ -35,6 +35,11 @@ public class AuthenticationService {
     private ApplicationEventPublisher applicationEventPublisher;
 
     public JwtAuthenticationResponse signup(UserSignupRequestDto requestDto) {
+        // Verificar que las contraseñas coincidan
+        if (!requestDto.getPassword().equals(requestDto.getConfirmPassword())) {
+            throw new IllegalArgumentException("Las contraseñas no coinciden.");
+        }
+
         // Crear y configurar el nuevo UserAccount a partir del DTO
         UserAccount user = new UserAccount();
         user.setFirstName(requestDto.getFirstName());
@@ -58,6 +63,7 @@ public class AuthenticationService {
 
         return response;
     }
+
 
 
     public LoginResponseDto signin(SigninRequest request) {

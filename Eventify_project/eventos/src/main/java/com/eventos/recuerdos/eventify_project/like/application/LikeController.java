@@ -4,10 +4,10 @@ import com.eventos.recuerdos.eventify_project.like.domain.LikeService;
 import com.eventos.recuerdos.eventify_project.like.dto.LikeDTO;
 import com.eventos.recuerdos.eventify_project.user.dto.UserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -18,8 +18,8 @@ public class LikeController {
 
     // Dar "me gusta" a una publicación
     @PostMapping("/{publicationId}/like")
-    public ResponseEntity<String> likePublication(@PathVariable Long publicationId) {
-        likeService.likePublication(publicationId);
+    public ResponseEntity<String> likePublication(@PathVariable Long publicationId, Principal principal) {
+        likeService.likePublication(publicationId, principal.getName());
         return ResponseEntity.ok("Like agregado exitosamente.");
     }
 
@@ -30,14 +30,7 @@ public class LikeController {
         return ResponseEntity.ok(users);
     }
 
-    // Quitar "me gusta" de una publicación
-    @DeleteMapping("/{id}/likes")
-    public ResponseEntity<?> unlikePublication(@PathVariable Long id, @RequestParam Long userId) {
-        likeService.unlikePublication(id, userId);
-        return ResponseEntity.noContent().build();
-    }
-
-    //obtener todos los likes dados
+    // Obtener todos los likes dados
     @GetMapping
     public ResponseEntity<List<LikeDTO>> getAllLikes() {
         List<LikeDTO> likes = likeService.getAllLikes();

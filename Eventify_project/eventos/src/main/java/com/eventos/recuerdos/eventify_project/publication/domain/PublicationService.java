@@ -1,6 +1,7 @@
 package com.eventos.recuerdos.eventify_project.publication.domain;
 
 import com.eventos.recuerdos.eventify_project.exception.ResourceNotFoundException;
+import com.eventos.recuerdos.eventify_project.like.domain.LikeService;
 import com.eventos.recuerdos.eventify_project.like.dto.LikeDTO;
 import com.eventos.recuerdos.eventify_project.like.infrastructure.LikeRepository;
 import com.eventos.recuerdos.eventify_project.memory.domain.Memory;
@@ -116,18 +117,4 @@ public class PublicationService {
         publicationRepository.delete(publication);
     }
 
-    public List<LikeDTO> getLikesByPublication(Long publicationId) {
-        Publication publication = publicationRepository.findById(publicationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Publicación no encontrada con ID: " + publicationId));
-
-        return publication.getPublicationLikes().stream()
-                .map(like -> modelMapper.map(like, LikeDTO.class))
-                .collect(Collectors.toList());
-    }
-
-    public int getLikeCount(Long publicationId) {
-        Publication publication = publicationRepository.findById(publicationId)
-                .orElseThrow(() -> new RuntimeException("Publicación no encontrada"));
-        return publication.getPublicationLikes().size();
-    }
 }

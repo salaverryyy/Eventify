@@ -1,5 +1,7 @@
 package com.eventos.recuerdos.eventify_project.publication.application;
 
+import com.eventos.recuerdos.eventify_project.like.domain.LikeService;
+import com.eventos.recuerdos.eventify_project.like.dto.LikeCountDto;
 import com.eventos.recuerdos.eventify_project.like.dto.LikeDTO;
 import com.eventos.recuerdos.eventify_project.publication.domain.PublicationService;
 import com.eventos.recuerdos.eventify_project.publication.dto.PublicationCreationResponseDto;
@@ -19,6 +21,9 @@ import java.util.List;
 public class PublicationController {
     @Autowired
     private PublicationService publicationService;
+
+    @Autowired
+    private LikeService likeService;
 
     // Obtener los detalles de una publicación por su ID
     @GetMapping("/{id}")
@@ -61,10 +66,11 @@ public class PublicationController {
         return ResponseEntity.noContent().build();
     }
 
-    // Obtener la lista de usuarios que dieron "me gusta" a una publicación
-    @GetMapping("/{id}/likes")
-    public ResponseEntity<List<LikeDTO>> getLikesByPublication(@PathVariable Long id) {
-        List<LikeDTO> likes = publicationService.getLikesByPublication(id);
-        return ResponseEntity.ok(likes);
+    // Endpoint para obtener la cantidad de "me gusta" en una publicación
+    @GetMapping("/{publicationId}/likes/count")
+    public ResponseEntity<LikeCountDto> getLikesByPublication(@PathVariable Long publicationId) {
+        int likeCount = likeService.getLikeCountByPublication(publicationId);
+        LikeCountDto likeCountDto = new LikeCountDto(likeCount);
+        return ResponseEntity.ok(likeCountDto);
     }
 }

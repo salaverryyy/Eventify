@@ -116,18 +116,6 @@ public class EventService {
     }
 
 
-    // Obtener lista de invitados del evento
-    public List<EventGuestDTO> getEventGuests(Long eventId) {
-        Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new RuntimeException("Evento no encontrado con id: " + eventId));
-
-        // Obtener las invitaciones del evento y los usuarios invitados
-        return event.getInvitations().stream()
-                .map(Invitation::getUsuarioInvitado)
-                .filter(user -> user != null) // Asegurarse de que no haya invitados nulos
-                .map(user -> modelMapper.map(user, EventGuestDTO.class))
-                .collect(Collectors.toList());
-    }
 
 
     // Método para agregar un Memory a un Event
