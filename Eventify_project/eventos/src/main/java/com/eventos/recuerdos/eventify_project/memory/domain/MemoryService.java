@@ -1,8 +1,11 @@
 package com.eventos.recuerdos.eventify_project.memory.domain;
 
+import com.eventos.recuerdos.eventify_project.event.dto.EventBasicDto;
 import com.eventos.recuerdos.eventify_project.exception.ResourceConflictException;
 import com.eventos.recuerdos.eventify_project.exception.ResourceNotFoundException;
+import com.eventos.recuerdos.eventify_project.invitation.infrastructure.InvitationRepository;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
+import com.eventos.recuerdos.eventify_project.memory.dto.MemoryEventDto;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryWithPublicationsDTO;
 import com.eventos.recuerdos.eventify_project.memory.infrastructure.MemoryRepository;
 import com.eventos.recuerdos.eventify_project.publication.dto.PublicationDTO;
@@ -15,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
@@ -24,6 +28,8 @@ import java.util.stream.Collectors;
 public class MemoryService {
     @Autowired
     private MemoryRepository memoryRepository;
+    @Autowired
+    private InvitationRepository invitationRepository;
     @Autowired
     private PublicationRepository publicationRepository;
     @Autowired
@@ -110,6 +116,39 @@ public class MemoryService {
                 .map(p -> modelMapper.map(p, PublicationDTO.class))
                 .collect(Collectors.toList());
         return new MemoryWithPublicationsDTO(modelMapper.map(memory, MemoryDTO.class), publications);
+    }
+
+    public List<MemoryEventDto> getMemoriesForUser(Long userId) {
+        // Obtener recuerdos creados por el usuario
+        List<Memory> createdMemories = memoryRepository.findByUserAccountId(userId);
+
+        // Obtener recuerdos en los cuales el usuario ha sido invitado y aceptado
+        List<Memory> invitedMemories = invitationRepository.findAcceptedMemoriesByUserId(userId);
+
+        // Combinar ambas listas
+        List<Memory> allMemories = new ArrayList<>();
+        allMemories.addAll(createdMemories);
+        allMemories.addAll(invitedMemories);
+
+        // Convertir a MemoryEventDto
+        return allMemories.stream().map(this::convertToMemoryEventDto).collect(Collectors.toList());
+    }
+
+    private MemoryEventDto convertToMemoryEventDto(Memory memory) {
+        MemoryEventDto dto = new MemoryEventDto();
+        dto.setMemoryId(memory.getId());
+        dto.setCoverPhoto(memory.getCoverPhoto());
+
+        // Convertir el evento si existe
+        if (memory.getEvent() != null) {
+            EventBasicDto eventDto = new EventBasicDto();
+            eventDto.setEventId(memory.getEvent().getId());
+            eventDto.setEventName(memory.getEvent().getEventName());
+            eventDto.setEventDate(memory.getEvent().getEventDate());
+            dto.setEvent(eventDto);
+        }
+
+        return dto;
     }
 
     public List<MemoryDTO> getAllMemories() {

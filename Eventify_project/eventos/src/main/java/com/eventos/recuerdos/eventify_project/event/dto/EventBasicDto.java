@@ -6,9 +6,7 @@ import java.time.LocalDate;
 
 @Data
 public class EventBasicDto {
-    private Long id;
+    private Long eventId;
     private String eventName;
-    private String eventDescription;
     private LocalDate eventDate;
-    private Long organizerId;
 }

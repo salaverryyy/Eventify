@@ -31,6 +31,8 @@ public class Memory {
     @Column(unique = true, nullable = false)
     private String albumLink;
 
+    private String coverPhoto; // Foto de portada del álbum
+
     // Relación Many-to-One con User (usuario creador del recuerdo)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
