@@ -50,11 +50,6 @@ public class MemoryService {
         return code.toString();
     }
 
-    private String generateAlbumLink() {
-        // Generar un enlace único para el álbum usando UUID
-        String uniqueToken = UUID.randomUUID().toString();
-        return "http://localhost:3000/album/" + uniqueToken; // Ajusta el enlace base según tus necesidades
-    }
 
     public MemoryDTO getMemoryById(Long id) {
         Memory memory = memoryRepository.findById(id).orElse(null);
@@ -76,20 +71,29 @@ public class MemoryService {
             throw new ResourceConflictException("Ya existe un recuerdo con el mismo título.");
         }
 
+        // Crear la entidad Memory sin el albumLink
         Memory memory = modelMapper.map(memoryDTO, Memory.class);
         memory.setUserAccount(userAccount);
         memory.setMemoryCreationDate(LocalDateTime.now());
         memory.setAccessCode(generateAccessCode()); // Asignar código de acceso único
-        memory.setAlbumLink(generateAlbumLink());
         memory.setCoverPhoto("https://bucket-s3.s3.amazonaws.com/" + coverPhoto.getOriginalFilename());
 
         // Agregar el usuario creador a la lista de participantes
         memory.getParticipants().add(userAccount);
 
+        // Guardar inicialmente el Memory sin el albumLink
         Memory savedMemory = memoryRepository.save(memory);
+
+        // Ahora genera el albumLink usando el memoryId
+        String albumLink = "http://localhost:5173/album/" + savedMemory.getId();
+        savedMemory.setAlbumLink(albumLink);
+
+        // Guardar nuevamente el Memory con el albumLink actualizado
+        savedMemory = memoryRepository.save(savedMemory);
 
         return modelMapper.map(savedMemory, MemoryDTO.class);
     }
+
 
 
     public MemoryDTO updateMemory(Long id, MemoryDTO memoryDTO) {
