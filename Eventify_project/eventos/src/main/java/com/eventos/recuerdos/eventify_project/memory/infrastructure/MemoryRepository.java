@@ -5,6 +5,8 @@ import com.eventos.recuerdos.eventify_project.memory.domain.Memory;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -20,4 +22,7 @@ public interface MemoryRepository extends JpaRepository<Memory, Long> {
     Memory findByAccessCode(String accessCode);
 
     List<Memory> findByUserAccountId(Long userId);
+    @Query("SELECT m FROM Memory m JOIN m.participants p WHERE p.id = :userId")
+    List<Memory> findMemoriesByParticipantsId(@Param("userId") Long userId);
+
 }

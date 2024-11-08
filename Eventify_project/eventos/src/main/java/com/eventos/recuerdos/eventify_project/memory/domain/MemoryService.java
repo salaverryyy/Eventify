@@ -81,9 +81,10 @@ public class MemoryService {
         memory.setMemoryCreationDate(LocalDateTime.now());
         memory.setAccessCode(generateAccessCode()); // Asignar código de acceso único
         memory.setAlbumLink(generateAlbumLink());
-
-        // Simulación de URL para la imagen de portada
         memory.setCoverPhoto("https://bucket-s3.s3.amazonaws.com/" + coverPhoto.getOriginalFilename());
+
+        // Agregar el usuario creador a la lista de participantes
+        memory.getParticipants().add(userAccount);
 
         Memory savedMemory = memoryRepository.save(memory);
 
@@ -122,20 +123,15 @@ public class MemoryService {
     }
 
     public List<MemoryEventDto> getMemoriesForUser(Long userId) {
-        // Obtener recuerdos creados por el usuario
-        List<Memory> createdMemories = memoryRepository.findByUserAccountId(userId);
-
-        // Obtener recuerdos en los cuales el usuario ha sido invitado y aceptado
-        List<Memory> invitedMemories = invitationRepository.findAcceptedMemoriesByUserId(userId);
-
-        // Combinar ambas listas
-        List<Memory> allMemories = new ArrayList<>();
-        allMemories.addAll(createdMemories);
-        allMemories.addAll(invitedMemories);
+        // Obtener recuerdos donde el usuario es creador o participante
+        List<Memory> userMemories = memoryRepository.findMemoriesByParticipantsId(userId);
 
         // Convertir a MemoryEventDto
-        return allMemories.stream().map(this::convertToMemoryEventDto).collect(Collectors.toList());
+        return userMemories.stream()
+                .map(this::convertToMemoryEventDto)
+                .collect(Collectors.toList());
     }
+
 
     private MemoryEventDto convertToMemoryEventDto(Memory memory) {
         MemoryEventDto dto = new MemoryEventDto();
