@@ -50,9 +50,29 @@ public class InvitationService {
         return statusDto;
     }
 
-    public void acceptInvitation(Long id) {
-        updateInvitationStatus(id, InvitationStatus.ACCEPTED);
+    public String acceptInvitation(Long invitationId, String userEmail) {
+        Invitation invitation = invitationRepository.findById(invitationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Invitación no encontrada"));
+
+        UserAccount invitedUser = userAccountRepository.findByEmail(userEmail);
+        if (invitedUser == null) {
+            throw new ResourceNotFoundException("Usuario no encontrado");
+        }
+
+        invitation.setStatus(InvitationStatus.ACCEPTED);
+        invitationRepository.save(invitation);
+
+        // Agregar usuario a la lista de participantes del álbum
+        Memory memory = invitation.getMemory();
+        if (!memory.getParticipants().contains(invitedUser)) {
+            memory.getParticipants().add(invitedUser);
+            memoryRepository.save(memory);
+        }
+
+        return "Invitación aceptada.";
     }
+
+
 
     public void rejectInvitation(Long id) {
         updateInvitationStatus(id, InvitationStatus.REJECTED);

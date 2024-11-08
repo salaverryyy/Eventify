@@ -28,10 +28,12 @@ public class InvitationController {
 
     // Aceptar una invitación
     @PutMapping("/{id}/accept")
-    public ResponseEntity<String> acceptInvitation(@PathVariable Long id) {
-        invitationService.acceptInvitation(id);
+    public ResponseEntity<String> acceptInvitation(@PathVariable Long id, Principal principal) {
+        String userEmail = principal.getName();
+        invitationService.acceptInvitation(id, userEmail);
         return ResponseEntity.ok("Invitación aceptada.");
     }
+
 
     // Rechazar una invitación
     @PutMapping("/{id}/decline")

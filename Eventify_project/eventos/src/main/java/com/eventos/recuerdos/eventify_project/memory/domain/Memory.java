@@ -49,4 +49,12 @@ public class Memory {
     // Relación One-to-One con Event
     @OneToOne(mappedBy = "memory", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private Event event;
+
+    @ManyToMany
+    @JoinTable(
+            name = "memory_participants",
+            joinColumns = @JoinColumn(name = "memory_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private List<UserAccount> participants = new ArrayList<>();
 }
