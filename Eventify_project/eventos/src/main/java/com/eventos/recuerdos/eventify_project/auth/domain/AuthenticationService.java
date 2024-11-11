@@ -1,61 +1,78 @@
 package com.eventos.recuerdos.eventify_project.auth.domain;
 
+import com.eventos.recuerdos.eventify_project.HelloEmailEvent;
 import com.eventos.recuerdos.eventify_project.auth.dto.JwtAuthenticationResponse;
+import com.eventos.recuerdos.eventify_project.auth.dto.LoginResponseDto;
 import com.eventos.recuerdos.eventify_project.auth.dto.SigninRequest;
-import com.eventos.recuerdos.eventify_project.securityconfig.JwtService;
-import com.eventos.recuerdos.eventify_project.user.domain.User;
-import com.eventos.recuerdos.eventify_project.user.infrastructure.UserRepository;
+import com.eventos.recuerdos.eventify_project.auth.dto.UserSignupRequestDto;
+import com.eventos.recuerdos.eventify_project.securityconfig.domain.JwtService;
+import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
+import com.eventos.recuerdos.eventify_project.user.domain.Role;
+import com.eventos.recuerdos.eventify_project.user.infrastructure.UserAccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AuthenticationService {
-    @Autowired
-    UserRepository userRepository;
 
     @Autowired
-    PasswordEncoder passwordEncoder;
+    private UserAccountRepository userRepository;
 
     @Autowired
-    JwtService jwtService;
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
-    AuthenticationManager authenticationManager;
+    private JwtService jwtService;
 
-    public JwtAuthenticationResponse signup(User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
+
+    public JwtAuthenticationResponse signup(UserSignupRequestDto requestDto) {
+        // Verificar que las contraseñas coincidan
+        if (!requestDto.getPassword().equals(requestDto.getConfirmPassword())) {
+            throw new IllegalArgumentException("Las contraseñas no coinciden.");
+        }
+
+        // Crear y configurar el nuevo UserAccount a partir del DTO
+        UserAccount user = new UserAccount();
+        user.setFirstName(requestDto.getFirstName());
+        user.setLastName(requestDto.getLastName());
+        user.setUsername(requestDto.getUsername());
+        user.setEmail(requestDto.getEmail());
+        user.setPassword(passwordEncoder.encode(requestDto.getPassword()));
+        user.setRole(Role.USER);  // Asignar el rol USER por defecto
+
+        // Guardar el usuario en la base de datos
         userRepository.save(user);
+
+        // Generar token JWT
         var jwt = jwtService.generateToken(user);
 
-        JwtAuthenticationResponse response = new JwtAuthenticationResponse();
-        response.setToken(jwt);
+        // Crear respuesta con el token y el userId
+        JwtAuthenticationResponse response = new JwtAuthenticationResponse(jwt, user.getId());
+
+        // Publicar el evento para enviar el correo de bienvenida
+        applicationEventPublisher.publishEvent(new HelloEmailEvent(user.getEmail()));
 
         return response;
     }
 
-    public JwtAuthenticationResponse login(SigninRequest request) throws IllegalArgumentException {
-        // Autenticación del usuario usando email y contraseña
+
+
+    public LoginResponseDto signin(SigninRequest request) {
         authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-        );
-
-        // Obtener el usuario de la base de datos
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con email: " + request.getEmail()));
-
-        // Generar el token JWT
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+        var user = userRepository.findByEmail(request.getEmail());
         var jwt = jwtService.generateToken(user);
 
-        // Crear y devolver la respuesta con el token JWT
-        JwtAuthenticationResponse response = new JwtAuthenticationResponse();
-        response.setToken(jwt);
-
-        return response;
+        return new LoginResponseDto(jwt);
     }
 
 }

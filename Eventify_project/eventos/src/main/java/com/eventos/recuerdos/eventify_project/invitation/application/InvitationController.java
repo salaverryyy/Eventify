@@ -1,41 +1,41 @@
 package com.eventos.recuerdos.eventify_project.invitation.application;
 
+import com.eventos.recuerdos.eventify_project.exception.ResourceNotFoundException;
+import com.eventos.recuerdos.eventify_project.invitation.dto.*;
 import com.eventos.recuerdos.eventify_project.invitation.domain.InvitationService;
-import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationByLinkDTO;
-import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationByQrDTO;
-import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationDTO;
-import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationStatusDTO;
+import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
 @RequestMapping("/invitation")
 public class InvitationController {
+
     @Autowired
     private InvitationService invitationService;
 
-
-    //Obtener el estado de una invitación
+    // Obtener el estado de una invitación
     @GetMapping("/{id}")
-    public ResponseEntity<InvitationStatusDTO> getInvitationStatus(@PathVariable Long id) {
-        InvitationStatusDTO status = invitationService.getInvitationStatus(id);
+    public ResponseEntity<InvitationStatusDto> getInvitationStatus(@PathVariable Long id) {
+        InvitationStatusDto status = invitationService.getInvitationStatus(id);
         return ResponseEntity.ok(status);
     }
 
-
-
-    //Aceptar una invitación
+    // Aceptar una invitación
     @PutMapping("/{id}/accept")
-    public ResponseEntity<String> acceptInvitation(@PathVariable Long id) {
-        invitationService.acceptInvitation(id);
+    public ResponseEntity<String> acceptInvitation(@PathVariable Long id, Principal principal) {
+        String userEmail = principal.getName();
+        invitationService.acceptInvitation(id, userEmail);
         return ResponseEntity.ok("Invitación aceptada.");
     }
 
-    //Rechazar una invitación
+
+    // Rechazar una invitación
     @PutMapping("/{id}/decline")
     public ResponseEntity<String> rejectInvitation(@PathVariable Long id) {
         invitationService.rejectInvitation(id);
@@ -44,50 +44,36 @@ public class InvitationController {
 
     // Enviar invitación por QR
     @PostMapping("/sendByQr")
-    public ResponseEntity<InvitationDTO> sendInvitationByQr(@RequestBody InvitationByQrDTO invitationByQrDTO) {
-        InvitationDTO createdInvitation = invitationService.sendInvitationByQr(invitationByQrDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdInvitation);
+    public ResponseEntity<List<InvitationDto>> sendInvitationByQr(@RequestBody InvitationRequestDto invitationRequestDto, Principal principal) {
+        List<InvitationDto> createdInvitations = invitationService.sendInvitationByQr(invitationRequestDto, principal);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdInvitations);
     }
 
-
-    // Enviar invitación por Link
-    @PostMapping("/sendByLink")
-    public ResponseEntity<InvitationDTO> sendInvitationByLink(@RequestBody InvitationByLinkDTO invitationByLinkDTO) {
-        InvitationDTO createdInvitation = invitationService.sendInvitationByLink(invitationByLinkDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdInvitation);
+    // Verificar código de acceso y obtener el enlace del álbum
+    @GetMapping("/verify-access-code/{code}")
+    public ResponseEntity<String> verifyAccessCode(@PathVariable String code) {
+        MemoryDTO memory = invitationService.verifyAccessCode(code);
+        return ResponseEntity.ok("Código de acceso válido para el álbum en: " + memory.getAlbumLink());
     }
 
-
-    //Acceder a una invitación mediante el escaneo de un código QR
-    @GetMapping("/qr/{codigoQR}")
-    public ResponseEntity<InvitationDTO> getInvitationByQR(@PathVariable String codigoQR) {
-        InvitationDTO invitation = invitationService.getInvitationByQR(codigoQR);
-        return ResponseEntity.ok(invitation);
-    }
-
-    //Acceder a una invitación mediante un enlace (token)
-    @GetMapping("/link/{token}")
-    public ResponseEntity<InvitationDTO> getInvitationByLink(@PathVariable String token) {
-        InvitationDTO invitation = invitationService.getInvitationByLink(token);
-        return ResponseEntity.ok(invitation);
-    }
-
-
-
-    //eliminar invitacion por Id
+    // Eliminar invitación por ID
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteInvitation(@PathVariable Long id) {
         invitationService.deleteInvitation(id);
         return ResponseEntity.ok("Invitación eliminada con éxito.");
     }
 
-
-    //obtener todas las invitaciones creadas
-    @GetMapping
-    public ResponseEntity<List<InvitationDTO>> getAllInvitations() {
-        List<InvitationDTO> invitations = invitationService.getAllInvitations();
-        return ResponseEntity.ok(invitations);
+    // Obtener todas las invitaciones aceptadas por memoryId
+    @GetMapping("/memory/{memoryId}/accepted")
+    public ResponseEntity<List<InvitationDto>> getAcceptedInvitations(@PathVariable Long memoryId) {
+        List<InvitationDto> acceptedInvitations = invitationService.getAcceptedInvitations(memoryId);
+        return ResponseEntity.ok(acceptedInvitations);
     }
 
-
+    // Obtener todas las invitaciones creadas
+    @GetMapping
+    public ResponseEntity<List<InvitationDto>> getAllInvitations() {
+        List<InvitationDto> invitations = invitationService.getAllInvitations();
+        return ResponseEntity.ok(invitations);
+    }
 }

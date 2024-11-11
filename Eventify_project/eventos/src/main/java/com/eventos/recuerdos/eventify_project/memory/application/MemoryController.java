@@ -3,14 +3,18 @@ package com.eventos.recuerdos.eventify_project.memory.application;
 import com.eventos.recuerdos.eventify_project.exception.ResourceBadRequestException;
 import com.eventos.recuerdos.eventify_project.memory.domain.MemoryService;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
+import com.eventos.recuerdos.eventify_project.memory.dto.MemoryEventDto;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryWithPublicationsDTO;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -27,17 +31,27 @@ public class MemoryController {
     }
 
     @PostMapping
-    public ResponseEntity<MemoryDTO> createMemory(@Valid @RequestBody MemoryDTO memoryDTO, BindingResult result) {
-        if (result.hasErrors()) {
-            throw new ResourceBadRequestException("Pon los datos correctos por favor");
-        }
+    public ResponseEntity<MemoryDTO> createMemory(
+            @RequestParam("memoryName") String memoryName,
+            @RequestParam("description") String description,
+            @RequestParam("coverPhoto") MultipartFile coverPhoto,
+            Principal principal) {
 
-        // Llamar al servicio para crear el Memory
-        MemoryDTO createdMemory = memoryService.createMemory(memoryDTO);
+        // Crear el DTO y asignar los valores
+        MemoryDTO memoryDTO = new MemoryDTO();
+        memoryDTO.setMemoryName(memoryName);
+        memoryDTO.setDescription(description);
+
+        // Llamar al servicio para crear el Memory, pasando el Principal y la foto
+        MemoryDTO createdMemory = memoryService.createMemory(memoryDTO, coverPhoto, principal);
 
         // Devolver la respuesta HTTP con el Memory creado
         return ResponseEntity.status(HttpStatus.CREATED).body(createdMemory);
     }
+
+
+
+
 
 
     @PutMapping("/{id}")
@@ -59,6 +73,15 @@ public class MemoryController {
     public ResponseEntity<MemoryWithPublicationsDTO> getMemoryWithPublications(@PathVariable Long id) {
         MemoryWithPublicationsDTO memoryWithPublications = memoryService.getMemoryWithPublications(id);
         return ResponseEntity.ok(memoryWithPublications);
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<MemoryEventDto>> getMemoriesForUser(@PathVariable Long userId) {
+        List<MemoryEventDto> memories = memoryService.getMemoriesForUser(userId);
+        if (memories.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(memories);
     }
 
     //Obtener todos los memory credos

@@ -11,9 +11,6 @@ public class MemoryDTO {
 
     private Long id;
 
-    @NotNull(message = "El ID del usuario es obligatorio.")
-    private Long userId;
-
     @NotBlank(message = "El título no puede estar en blanco.")
     @Size(min = 3, max = 100, message = "El título debe tener entre 3 y 100 caracteres.")
     private String memoryName;
@@ -23,8 +20,11 @@ public class MemoryDTO {
 
     private LocalDateTime memoryCreationDate;
 
+    private String albumLink;
 
+    private String accessCode;
 
+    private String coverPhoto;
 }
 
 //Maneja la información de los recuerdos (álbumes virtuales), sin

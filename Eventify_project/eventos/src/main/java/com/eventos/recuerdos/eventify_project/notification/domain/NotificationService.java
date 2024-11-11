@@ -31,7 +31,7 @@ public class NotificationService {
 
     // Obtener todas las notificaciones de un usuario
     public List<NotificationDTO> getNotificationsByUser(Long userId) {
-        List<Notification> notifications = notificationRepository.findByUserReceiverId(userId);
+        List<Notification> notifications = notificationRepository.findByUserAccountReceiverId(userId);
         return notifications.stream()
                 .map(notification -> modelMapper.map(notification, NotificationDTO.class))
                 .collect(Collectors.toList());
@@ -39,7 +39,7 @@ public class NotificationService {
 
     // Obtener solo las notificaciones no leídas de un usuario
     public List<NotificationDTO> getUnreadNotificationsByUser(Long userId) {
-        List<Notification> notifications = notificationRepository.findByUserReceiverIdAndStatus(userId, Status.UNREAD);
+        List<Notification> notifications = notificationRepository.findByUserAccountReceiverIdAndStatus(userId, Status.UNREAD);
         return notifications.stream()
                 .map(notification -> modelMapper.map(notification, NotificationDTO.class))
                 .collect(Collectors.toList());
@@ -62,7 +62,7 @@ public class NotificationService {
 
     // Marcar todas las notificaciones como leídas para un usuario
     public void markAllNotificationsAsRead(Long userId) {
-        List<Notification> notifications = notificationRepository.findByUserReceiverIdAndStatus(userId, Status.UNREAD);
+        List<Notification> notifications = notificationRepository.findByUserAccountReceiverIdAndStatus(userId, Status.UNREAD);
         for (Notification notification : notifications) {
             notification.setStatus(Status.READ);
         }

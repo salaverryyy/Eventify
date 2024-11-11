@@ -1,5 +1,7 @@
-package com.eventos.recuerdos.eventify_project.securityconfig;
+package com.eventos.recuerdos.eventify_project.config;
 
+import com.eventos.recuerdos.eventify_project.auth.TokenBlacklistService;
+import com.eventos.recuerdos.eventify_project.securityconfig.domain.UserDetailsServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,20 +15,22 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-import com.eventos.recuerdos.eventify_project.securityconfig.JwtService;
-import com.eventos.recuerdos.eventify_project.securityconfig.UserDetailsServiceImpl;
+import com.eventos.recuerdos.eventify_project.securityconfig.domain.JwtService;
 
 import java.io.IOException;
+
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final UserDetailsServiceImpl userService;
+    private final TokenBlacklistService tokenBlacklistService;
 
     @Autowired
-    public JwtAuthenticationFilter(JwtService jwtService, UserDetailsServiceImpl userService) {
+    public JwtAuthenticationFilter(JwtService jwtService, UserDetailsServiceImpl userService, TokenBlacklistService tokenBlacklistService) {
         this.jwtService = jwtService;
         this.userService = userService;
+        this.tokenBlacklistService = tokenBlacklistService;
     }
 
     @Override
@@ -41,6 +45,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         jwt = authHeader.substring(7);
+
+        // Verifica si el token está en la blacklist
+        if (tokenBlacklistService.isTokenBlacklisted(jwt)) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Token inválido, por favor inicie sesión nuevamente.");
+            return;
+        }
+
         userEmail = jwtService.extractUserName(jwt);
 
         if (StringUtils.hasText(userEmail) && SecurityContextHolder.getContext().getAuthentication() == null) {

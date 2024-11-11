@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Invitación al Álbum Virtual</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e9ecef;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            background-color: #ffffff;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            padding: 20px;
+            background-color: #ff6d33;
+            border-bottom: 2px solid #000000;
+        }
+        .header h1 {
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .content {
+            text-align: center;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .qr-container {
+            background-color: #ffffff;
+            border: 2px solid black;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin: 20px auto;
+            max-width: 300px;
+        }
+        .footer {
+            background-color: #ff6d33;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 8px;
+            max-width: 100%;
+            margin: 20px auto;
+            position: relative;
+        }
+        .logo-background {
+            background-color: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto;
+            width: fit-content;
+        }
+        .footer img {
+            max-width: 100px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>¡Te invitamos a ver nuestro álbum virtual!</h1>
+    </div>
+    <div class="content">
+        <p>Haz clic en el siguiente enlace para acceder al álbum:</p>
+        <a th:href="${albumLink}">Acceder al álbum</a>
+        <p>O escanea el siguiente código QR:</p>
+        <div class="qr-container">
+            <img th:src="'https://api.qrserver.com/v1/create-qr-code/?data=' + ${albumLink} + '&size=200x200'" alt="Código QR"/>
+        </div>
+        <p>¡Esperamos que disfrutes del contenido!</p>
+    </div>
+    <div class="footer">
+        <div class="logo-background">
+            <img src="cid:logoImage" alt="Eventify Logo"/>
+        </div>
+    </div>
+</div>
+</body>
+</html>

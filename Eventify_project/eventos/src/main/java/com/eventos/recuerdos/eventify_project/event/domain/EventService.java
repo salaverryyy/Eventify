@@ -1,21 +1,22 @@
 package com.eventos.recuerdos.eventify_project.event.domain;
 
+import com.eventos.recuerdos.eventify_project.event.dto.EventBasicDto;
 import com.eventos.recuerdos.eventify_project.event.dto.EventDTO;
 import com.eventos.recuerdos.eventify_project.event.infrastructure.EventRepository;
 import com.eventos.recuerdos.eventify_project.exception.ResourceNotFoundException;
-import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationDTO;
 import com.eventos.recuerdos.eventify_project.invitation.domain.Invitation;
 import com.eventos.recuerdos.eventify_project.memory.domain.Memory;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
 import com.eventos.recuerdos.eventify_project.memory.infrastructure.MemoryRepository;
-import com.eventos.recuerdos.eventify_project.user.domain.User;
+import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
 import com.eventos.recuerdos.eventify_project.user.dto.EventGuestDTO;
-import com.eventos.recuerdos.eventify_project.user.dto.UserDTO;
-import com.eventos.recuerdos.eventify_project.user.infrastructure.UserRepository;
+import com.eventos.recuerdos.eventify_project.user.infrastructure.UserAccountRepository;
+import org.springframework.security.access.AccessDeniedException;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,7 +27,7 @@ public class EventService {
     private EventRepository eventRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private UserAccountRepository userAccountRepository;
 
     @Autowired
     private MemoryRepository memoryRepository;
@@ -42,29 +43,39 @@ public class EventService {
     }
 
     // Crear un nuevo evento
-    public EventDTO createEvent(EventDTO eventDTO) {
+    public EventBasicDto createEvent(EventDTO eventDTO, String email) {
+        // Buscar el usuario por email
+        UserAccount organizer = userAccountRepository.findByEmail(email);
+        if (organizer == null) {
+            throw new ResourceNotFoundException("Usuario no encontrado con el email: " + email);
+        }
+
+        // Mapear el DTO a la entidad Event
         Event event = modelMapper.map(eventDTO, Event.class);
+        event.setOrganizer(organizer);  // Asignar el organizador al evento
+
+        // Guardar el evento y mapearlo a EventBasicDTO
         Event savedEvent = eventRepository.save(event);
-        return modelMapper.map(savedEvent, EventDTO.class);
+        return modelMapper.map(savedEvent, EventBasicDto.class);
     }
 
     // Actualizar un evento existente
-    public EventDTO updateEvent(Long id, EventDTO eventDTO) {
+    public EventDTO updateEvent(Long id, EventDTO eventDTO, Long organizerId) {
         // Busca el evento que deseas actualizar
-        Event event = eventRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado con ID: " + id));
+        Event event = eventRepository.findEventById(id);
+        if (event == null) {
+            throw new ResourceNotFoundException("Evento no encontrado con ID: " + id);
+        }
 
-        // Actualiza los campos del evento, excepto el ID
+        // Verifica si el organizerId coincide con el organizador del evento
+        if (event.getOrganizer() == null || !event.getOrganizer().getId().equals(organizerId)) {
+            throw new AccessDeniedException("No tienes permiso para actualizar este evento.");
+        }
+
+        // Actualiza los campos del evento, excepto el ID y el organizerId
         event.setEventName(eventDTO.getEventName());
         event.setEventDescription(eventDTO.getEventDescription());
         event.setEventDate(eventDTO.getEventDate());
-
-        // Actualizar el organizador solo si se proporciona un organizerId válido
-        if (eventDTO.getOrganizerId() != null) {
-            User organizer = userRepository.findById(eventDTO.getOrganizerId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Organizador no encontrado con ID: " + eventDTO.getOrganizerId()));
-            event.setOrganizer(organizer);
-        }
 
         // Guarda el evento actualizado
         Event updatedEvent = eventRepository.save(event);
@@ -72,6 +83,15 @@ public class EventService {
         // Retorna el DTO del evento actualizado
         return modelMapper.map(updatedEvent, EventDTO.class);
     }
+
+    public Long extractUserIdFromToken(Principal principal) {
+        UserAccount user = userAccountRepository.findByEmail(principal.getName());
+        if (user == null) {
+            throw new ResourceNotFoundException("Usuario no encontrado");
+        }
+        return user.getId();
+    }
+
 
 
 
@@ -96,18 +116,6 @@ public class EventService {
     }
 
 
-    // Obtener lista de invitados del evento
-    public List<EventGuestDTO> getEventGuests(Long eventId) {
-        Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new RuntimeException("Evento no encontrado con id: " + eventId));
-
-        // Obtener las invitaciones del evento y los usuarios invitados
-        return event.getInvitations().stream()
-                .map(Invitation::getUsuarioInvitado)
-                .filter(user -> user != null) // Asegurarse de que no haya invitados nulos
-                .map(user -> modelMapper.map(user, EventGuestDTO.class))
-                .collect(Collectors.toList());
-    }
 
 
     // Método para agregar un Memory a un Event

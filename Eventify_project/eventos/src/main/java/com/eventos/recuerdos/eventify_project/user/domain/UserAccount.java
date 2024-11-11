@@ -5,7 +5,7 @@ import com.eventos.recuerdos.eventify_project.memory.domain.Memory;
 import com.eventos.recuerdos.eventify_project.notification.domain.Notification;
 import com.eventos.recuerdos.eventify_project.publication.domain.Publication;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,13 +18,18 @@ import java.util.List;
 @Entity
 @Data
 @Table(name = "users")
-public class User implements UserDetails {
+@AllArgsConstructor
+@NoArgsConstructor
+public class UserAccount implements UserDetails {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id; // Identificador único
 
-    private String username; // Nombre de usuario
+    private String firstName;  // Nombre del usuario
+    private String lastName;   // Apellido del usuario
+
+    private String username;
 
     @Column(unique = true, nullable = false)
     private String email; // Correo electrónico único para autenticación
@@ -32,7 +37,7 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password; // Contraseña para iniciar sesión
 
-    private LocalDate userCreationDate; // Fecha de creación del perfil
+    private LocalDate userCreationDate = LocalDate.now(); // Fecha de creación del perfil
 
     @Enumerated(EnumType.STRING)
     private Role role; // Rol del usuario
@@ -40,10 +45,10 @@ public class User implements UserDetails {
     private Boolean expired = false;
     private Boolean locked = false;
     private Boolean credentialsExpired = false;
-    private Boolean enabled = true;
+    private Boolean enable = true;
 
     // Relaciones con otras entidades
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(mappedBy = "userAccount", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Memory> memories = new ArrayList<>(); // Lista de recuerdos creados
 
     @OneToMany(mappedBy = "usuarioInvitador", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
@@ -52,12 +57,11 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "usuarioInvitado", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Invitation> invitationsReceived = new ArrayList<>(); // Invitaciones recibidas
 
-    @OneToMany(mappedBy = "userReceiver", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(mappedBy = "userAccountReceiver", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Notification> notifications = new ArrayList<>(); // Notificaciones recibidas
 
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Publication> publications = new ArrayList<>(); // Publicaciones hechas
-
 
     // Métodos de UserDetails
     @Override
@@ -66,13 +70,12 @@ public class User implements UserDetails {
     }
 
     @Override
-    public String getPassword() {
-        return password;
+    public String getUsername() {
+        return email;
     }
 
-    @Override
-    public String getUsername() {
-        return username;
+    public String getUsernameField() {
+        return username; // Devuelve el nombre de usuario
     }
 
     @Override
@@ -92,6 +95,6 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return enabled;
+        return enable;
     }
 }

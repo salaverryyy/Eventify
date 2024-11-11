@@ -1,17 +1,20 @@
 package com.eventos.recuerdos.eventify_project.event.application;
 
 import com.eventos.recuerdos.eventify_project.event.domain.EventService;
+import com.eventos.recuerdos.eventify_project.event.dto.EventBasicDto;
 import com.eventos.recuerdos.eventify_project.event.dto.EventDTO;
 import com.eventos.recuerdos.eventify_project.invitation.domain.InvitationService;
-import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationDTO;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
 import com.eventos.recuerdos.eventify_project.user.dto.EventGuestDTO;
-import com.eventos.recuerdos.eventify_project.user.dto.UserDTO;
+import com.eventos.recuerdos.eventify_project.user.infrastructure.UserAccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -23,6 +26,9 @@ public class EventController {
     @Autowired
     InvitationService invitationService;
 
+    @Autowired
+    private UserAccountRepository userAccountRepository;
+
 
     //Obtener los detalles de un evento
     @GetMapping("/{id}")
@@ -33,17 +39,25 @@ public class EventController {
 
     //Crear un nuevo evento
     @PostMapping
-    public ResponseEntity<EventDTO> createEvent(@RequestBody EventDTO eventDTO) {
-        EventDTO createdEvent = eventService.createEvent(eventDTO);
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<EventBasicDto> createEvent(@RequestBody EventDTO eventDTO, Principal principal) {
+        // Extraer el ID del usuario desde el token (por medio del email o nombre del usuario en `principal`)
+        String email = principal.getName();  // Esto obtiene el email del usuario autenticado
+        EventBasicDto createdEvent = eventService.createEvent(eventDTO, email);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdEvent);
     }
 
+
     //Actualizar los detalles del evento
     @PatchMapping("/{id}")
-    public ResponseEntity<EventDTO> updateEvent(@PathVariable Long id, @RequestBody EventDTO eventDTO) {
-        EventDTO updatedEvent = eventService.updateEvent(id, eventDTO);
+    public ResponseEntity<EventDTO> updateEvent(@PathVariable Long id, @RequestBody EventDTO eventDTO, Principal principal) {
+        // Extrae el organizerId a partir del token
+        Long organizerId = eventService.extractUserIdFromToken(principal);
+        // Llama a updateEvent en el servicio pasando el organizerId extraído
+        EventDTO updatedEvent = eventService.updateEvent(id, eventDTO, organizerId);
         return ResponseEntity.ok(updatedEvent);
     }
+
 
     //Eliminar un evento
     @DeleteMapping("/{id}")
@@ -59,12 +73,6 @@ public class EventController {
         return ResponseEntity.ok(memoryDTO);
     }
 
-
-    // Obtener lista de usuarios invitados a un evento
-    @GetMapping("/{eventId}/invitados")
-    public List<EventGuestDTO> getEventGuests(@PathVariable Long eventId) {
-        return eventService.getEventGuests(eventId);
-    }
 
     // Endpoint para asociar un Memory a un Event
     @PostMapping("/{eventId}/memory/{memoryId}")

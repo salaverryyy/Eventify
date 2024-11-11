@@ -1,5 +1,8 @@
 package com.eventos.recuerdos.eventify_project.auth.dto;
 
+import lombok.Data;
+
+@Data
 public class SigninRequest {
     private String email;
     private String password;

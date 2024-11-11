@@ -1,6 +1,6 @@
 package com.eventos.recuerdos.eventify_project.user.dto;
 
-import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationDTO;
+import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationDto;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
 import lombok.Data;
 
@@ -12,6 +12,6 @@ public class UserProfileDTO {
     private String username;
     private String email;
     private List<MemoryDTO> memories;
-    private List<InvitationDTO> invitations;
+    private List<InvitationDto> invitations;
 }
 //Mostrar información más detallada del usuario, con sus recuerdos e invitaciones.

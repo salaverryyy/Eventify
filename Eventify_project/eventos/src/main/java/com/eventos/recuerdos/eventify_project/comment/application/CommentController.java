@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -24,8 +25,11 @@ public class CommentController {
 
     // Crear un nuevo comentario en una publicación
     @PostMapping("/publicaciones/{publicationId}/comentarios")
-    public ResponseEntity<CommentDTO> createComment(@PathVariable Long publicationId, @RequestBody CommentDTO commentDTO) {
-        CommentDTO createdComment = commentService.createComment(publicationId, commentDTO);
+    public ResponseEntity<CommentDTO> createComment(
+            @PathVariable Long publicationId,
+            @RequestBody CommentDTO commentDTO,
+            Principal principal) {
+        CommentDTO createdComment = commentService.createComment(publicationId, commentDTO, principal.getName());
         return ResponseEntity.status(HttpStatus.CREATED).body(createdComment);
     }
 
@@ -50,8 +54,7 @@ public class CommentController {
         return ResponseEntity.ok(comments);
     }
 
-
-    //obtener todos los comentarios creados
+    // Obtener todos los comentarios creados
     @GetMapping
     public ResponseEntity<List<CommentDTO>> getAllComments() {
         List<CommentDTO> comments = commentService.getAllComments();

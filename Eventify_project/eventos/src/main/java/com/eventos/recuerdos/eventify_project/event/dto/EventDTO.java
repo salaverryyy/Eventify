@@ -11,6 +11,5 @@ public class EventDTO {
     private String eventName;
     private String eventDescription;
     private LocalDate eventDate;
-    private Long organizerId;  // ID del usuario organizador
     private MemoryDTO memory;
 }

@@ -1,50 +1,78 @@
 package com.eventos.recuerdos.eventify_project.invitation.domain;
 
-import com.eventos.recuerdos.eventify_project.event.domain.Event;
-import com.eventos.recuerdos.eventify_project.event.infrastructure.EventRepository;
+import com.eventos.recuerdos.eventify_project.InvitationEmailEvent;
 import com.eventos.recuerdos.eventify_project.exception.ResourceNotFoundException;
-import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationByLinkDTO;
-import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationByQrDTO;
-import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationDTO;
-import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationStatusDTO;
+import com.eventos.recuerdos.eventify_project.invitation.dto.*;
 import com.eventos.recuerdos.eventify_project.invitation.infrastructure.InvitationRepository;
-import com.eventos.recuerdos.eventify_project.user.domain.User;
-import com.eventos.recuerdos.eventify_project.user.domain.UserService;
-import com.eventos.recuerdos.eventify_project.user.infrastructure.UserRepository;
+import com.eventos.recuerdos.eventify_project.memory.domain.Memory;
+import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
+import com.eventos.recuerdos.eventify_project.memory.infrastructure.MemoryRepository;
+import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
+import com.eventos.recuerdos.eventify_project.user.infrastructure.UserAccountRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
+import java.security.Principal;
+import java.util.Base64;
+import java.util.UUID;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class InvitationService {
 
-    private final InvitationRepository invitationRepository;
-    private final UserRepository userRepository;
-    private final EventRepository eventRepository;
-    private final ModelMapper modelMapper;
+    @Autowired
+    private InvitationRepository invitationRepository;
 
-    public InvitationService(InvitationRepository invitationRepository,
-                             UserRepository userRepository,
-                             EventRepository eventRepository,
-                             ModelMapper modelMapper) {
-        this.invitationRepository = invitationRepository;
-        this.userRepository = userRepository;
-        this.eventRepository = eventRepository;
-        this.modelMapper = modelMapper;
-    }
+    @Autowired
+    private MemoryRepository memoryRepository;
 
-    public InvitationStatusDTO getInvitationStatus(Long id) {
+    private static final String CONFIRMATION_URL = "http://localhost:3000/confirm/";
+
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
+
+    @Autowired
+    private UserAccountRepository userAccountRepository;
+
+    @Autowired
+    private ModelMapper modelMapper;
+
+    public InvitationStatusDto getInvitationStatus(Long id) {
         Invitation invitation = invitationRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Invitación no encontrada con id: " + id));
-        return modelMapper.map(invitation, InvitationStatusDTO.class);
+                .orElseThrow(() -> new ResourceNotFoundException("Invitación no encontrada con ID: " + id));
+        InvitationStatusDto statusDto = new InvitationStatusDto();
+        statusDto.setInvitationStatus(invitation.getStatus());
+        return statusDto;
     }
 
-    public void acceptInvitation(Long id) {
-        updateInvitationStatus(id, InvitationStatus.ACCEPTED);
+    public String acceptInvitation(Long invitationId, String userEmail) {
+        Invitation invitation = invitationRepository.findById(invitationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Invitación no encontrada"));
+
+        UserAccount invitedUser = userAccountRepository.findByEmail(userEmail);
+        if (invitedUser == null) {
+            throw new ResourceNotFoundException("Usuario no encontrado");
+        }
+
+        invitation.setStatus(InvitationStatus.ACCEPTED);
+        invitationRepository.save(invitation);
+
+        // Agregar usuario a la lista de participantes del álbum
+        Memory memory = invitation.getMemory();
+        if (!memory.getParticipants().contains(invitedUser)) {
+            memory.getParticipants().add(invitedUser);
+            memoryRepository.save(memory);
+        }
+
+        return "Invitación aceptada.";
     }
+
+
 
     public void rejectInvitation(Long id) {
         updateInvitationStatus(id, InvitationStatus.REJECTED);
@@ -52,75 +80,101 @@ public class InvitationService {
 
     private void updateInvitationStatus(Long id, InvitationStatus status) {
         Invitation invitation = invitationRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Invitación no encontrada con id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Invitación no encontrada con ID: " + id));
         invitation.setStatus(status);
         invitationRepository.save(invitation);
     }
 
+    public List<InvitationDto> sendInvitationByQr(InvitationRequestDto invitationRequestDto, Principal principal) {
+        String senderEmail = principal.getName();
+        UserAccount sender = userAccountRepository.findByEmail(senderEmail);
 
-    public InvitationDTO sendInvitationByQr(InvitationByQrDTO dto) {
-        Invitation invitation = createInvitation(dto.getUserId(), dto.getEventId(), dto.getGuestEmail());
-        invitation.setQrCode(dto.getQrCode());
-
-        if (dto.getInvitedUserId() != null) {
-            User invitedUser = userRepository.findById(dto.getInvitedUserId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Usuario invitado no encontrado"));
-            invitation.setUsuarioInvitado(invitedUser);
+        if (sender == null) {
+            throw new ResourceNotFoundException("Usuario no encontrado con correo: " + senderEmail);
         }
 
-        return mapAndSaveInvitation(invitation);
+        Memory memory = memoryRepository.findByAccessCode(invitationRequestDto.getAccessCode());
+        if (memory == null) {
+            throw new ResourceNotFoundException("Memory no encontrado con código de acceso: " + invitationRequestDto.getAccessCode());
+        }
+
+        List<InvitationDto> invitations = new ArrayList<>();
+        for (String username : invitationRequestDto.getUsernames()) {
+            UserAccount invitedUser = userAccountRepository.findByUsername(username);
+            if (invitedUser == null) {
+                throw new ResourceNotFoundException("Usuario no encontrado con nombre de usuario: " + username);
+            }
+
+            String confirmationLink = generateConfirmationLink();
+            InvitationDto invitationDto = createAndSaveInvitation(invitedUser.getEmail(), sender, memory, confirmationLink);
+            invitations.add(invitationDto);
+
+            InvitationEmailEvent emailEvent = new InvitationEmailEvent(
+                    invitedUser.getEmail(),
+                    invitationDto.getQrCode(),
+                    confirmationLink
+            );
+            eventPublisher.publishEvent(emailEvent);
+        }
+        return invitations;
     }
 
-    public InvitationDTO sendInvitationByLink(InvitationByLinkDTO dto) {
-        Invitation invitation = createInvitation(dto.getUserId(), dto.getEventId(), dto.getGuestEmail());
-        invitation.setInvitationLink(dto.getInvitationLink());
-        return mapAndSaveInvitation(invitation);
-    }
-
-    private Invitation createInvitation(Long userId, Long eventId, String guestEmail) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + userId));
-        Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new ResourceNotFoundException("Evento no encontrado con id: " + eventId));
-
+    private InvitationDto createAndSaveInvitation(String guestEmail, UserAccount usuarioInvitador, Memory memory, String confirmationLink) {
         Invitation invitation = new Invitation();
-        invitation.setUsuarioInvitador(user);
-        invitation.setEvent(event);
         invitation.setGuestEmail(guestEmail);
-        invitation.setStatus(InvitationStatus.PENDING); // Asigna el valor del enum correctamente
-        return invitation;
+        invitation.setUsuarioInvitador(usuarioInvitador);
+        invitation.setStatus(InvitationStatus.PENDING);
+        invitation.setAlbumLink(memory.getAlbumLink());
+        invitation.setMemory(memory);
 
-    }
-
-    private InvitationDTO mapAndSaveInvitation(Invitation invitation) {
         Invitation savedInvitation = invitationRepository.save(invitation);
-        InvitationDTO resultDTO = modelMapper.map(savedInvitation, InvitationDTO.class);
-        resultDTO.setUserId(invitation.getUsuarioInvitador().getId());
-        return resultDTO;
+        InvitationDto invitationDto = modelMapper.map(savedInvitation, InvitationDto.class);
+
+        String qrCode = generateQRCode(confirmationLink);
+        invitationDto.setQrCode(qrCode);
+        invitationDto.setAlbumLink(memory.getAlbumLink());
+        invitationDto.setConfirmationLink(confirmationLink);
+
+        return invitationDto;
     }
 
-    public InvitationDTO getInvitationByQR(String qrCode) {
-        Invitation invitation = invitationRepository.findByQrCode(qrCode)
-                .orElseThrow(() -> new ResourceNotFoundException("Invitación no encontrada con código QR: " + qrCode));
-        return modelMapper.map(invitation, InvitationDTO.class);
+    private String generateConfirmationLink() {
+        String uniqueToken = UUID.randomUUID().toString();
+        return CONFIRMATION_URL + uniqueToken;
     }
 
-    public InvitationDTO getInvitationByLink(String token) {
-        Invitation invitation = invitationRepository.findByInvitationLinkContaining(token)
-                .orElseThrow(() -> new ResourceNotFoundException("Invitación no encontrada con token: " + token));
-        return modelMapper.map(invitation, InvitationDTO.class);
+    private String generateQRCode(String confirmationLink) {
+        String qrApiUrl = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + confirmationLink;
+        RestTemplate restTemplate = new RestTemplate();
+        byte[] qrImageBytes = restTemplate.getForObject(qrApiUrl, byte[].class);
+        return Base64.getEncoder().encodeToString(qrImageBytes);
     }
 
     public void deleteInvitation(Long id) {
-        Invitation invitation = invitationRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Invitación no encontrada con id: " + id));
-        invitationRepository.delete(invitation);
+        if (!invitationRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Invitación no encontrada con ID: " + id);
+        }
+        invitationRepository.deleteById(id);
     }
 
-    public List<InvitationDTO> getAllInvitations() {
-        return invitationRepository.findAll().stream()
-                .map(invitation -> modelMapper.map(invitation, InvitationDTO.class))
+    public List<InvitationDto> getAcceptedInvitations(Long memoryId) {
+        List<Invitation> acceptedInvitations = invitationRepository.findAllByMemoryIdAndStatus(memoryId, InvitationStatus.ACCEPTED);
+        return acceptedInvitations.stream()
+                .map(invitation -> modelMapper.map(invitation, InvitationDto.class))
                 .collect(Collectors.toList());
     }
-}
 
+    public List<InvitationDto> getAllInvitations() {
+        return invitationRepository.findAll().stream()
+                .map(invitation -> modelMapper.map(invitation, InvitationDto.class))
+                .collect(Collectors.toList());
+    }
+
+    public MemoryDTO verifyAccessCode(String accessCode) {
+        Memory memory = memoryRepository.findByAccessCode(accessCode);
+        if (memory == null) {
+            throw new ResourceNotFoundException("El código de acceso proporcionado no es válido.");
+        }
+        return modelMapper.map(memory, MemoryDTO.class);
+    }
+}

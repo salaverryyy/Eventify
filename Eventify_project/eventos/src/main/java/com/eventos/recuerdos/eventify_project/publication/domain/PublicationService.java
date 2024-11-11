@@ -1,18 +1,16 @@
 package com.eventos.recuerdos.eventify_project.publication.domain;
 
-import com.eventos.recuerdos.eventify_project.comment.domain.Comment;
-import com.eventos.recuerdos.eventify_project.comment.dto.CommentDTO;
-import com.eventos.recuerdos.eventify_project.comment.infrastructure.CommentRepository;
 import com.eventos.recuerdos.eventify_project.exception.ResourceNotFoundException;
-import com.eventos.recuerdos.eventify_project.like.domain.PublicationLike;
+import com.eventos.recuerdos.eventify_project.like.domain.LikeService;
 import com.eventos.recuerdos.eventify_project.like.dto.LikeDTO;
 import com.eventos.recuerdos.eventify_project.like.infrastructure.LikeRepository;
 import com.eventos.recuerdos.eventify_project.memory.domain.Memory;
 import com.eventos.recuerdos.eventify_project.memory.infrastructure.MemoryRepository;
+import com.eventos.recuerdos.eventify_project.publication.dto.PublicationCreationResponseDto;
 import com.eventos.recuerdos.eventify_project.publication.dto.PublicationDTO;
 import com.eventos.recuerdos.eventify_project.publication.infrastructure.PublicationRepository;
-import com.eventos.recuerdos.eventify_project.user.domain.User;
-import com.eventos.recuerdos.eventify_project.user.infrastructure.UserRepository;
+import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
+import com.eventos.recuerdos.eventify_project.user.infrastructure.UserAccountRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -32,16 +30,13 @@ public class PublicationService {
     private LikeRepository likeRepository;
 
     @Autowired
-    private CommentRepository commentRepository;
-
-    @Autowired
     private MemoryRepository memoryRepository;
 
     @Autowired
     private ModelMapper modelMapper;
 
     @Autowired
-    private UserRepository userRepository;
+    private UserAccountRepository userAccountRepository;
 
     public PublicationDTO getPublicationById(Long id) {
         Publication publication = publicationRepository.findById(id)
@@ -49,35 +44,46 @@ public class PublicationService {
         return modelMapper.map(publication, PublicationDTO.class);
     }
 
-    public PublicationDTO createPublication(Long memoryId, MultipartFile file, String description, Long userId) {
+    public PublicationCreationResponseDto createPublication(Long memoryId, MultipartFile file, String description, String userEmail) {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("El archivo es requerido para crear una publicación.");
         }
 
         Memory memory = memoryRepository.findById(memoryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Recuerdo no encontrado con id: " + memoryId));
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + userId));
+        UserAccount userAccount = userAccountRepository.findByEmail(userEmail);
+        if (userAccount == null) {
+            throw new ResourceNotFoundException("Usuario no encontrado con email: " + userEmail);
+        }
 
         Publication publication = new Publication();
         publication.setDescription(description);
         publication.setFileUrl(uploadFileToS3(file));
         publication.setFileType(detectFileType(file));
-        publication.setAuthor(user);
+        publication.setAuthor(userAccount);
         publication.setMemory(memory);
         publication.setPublicationDate(LocalDateTime.now());
 
         Publication savedPublication = publicationRepository.save(publication);
-        return modelMapper.map(savedPublication, PublicationDTO.class);
+        return modelMapper.map(savedPublication, PublicationCreationResponseDto.class);
     }
 
     private String uploadFileToS3(MultipartFile file) {
         return "https://bucket-s3.s3.amazonaws.com/" + file.getOriginalFilename();
     }
 
-    public PublicationDTO updatePublication(Long id, MultipartFile file, String description) {
+    public PublicationCreationResponseDto updatePublication(Long id, MultipartFile file, String description, String userEmail) {
         Publication publication = publicationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Publicación no encontrada con ID: " + id));
+
+        UserAccount userAccount = userAccountRepository.findByEmail(userEmail);
+        if (userAccount == null) {
+            throw new ResourceNotFoundException("Usuario no encontrado con email: " + userEmail);
+        }
+
+        if (!publication.getAuthor().getId().equals(userAccount.getId())) {
+            throw new SecurityException("No tienes permiso para editar esta publicación.");
+        }
 
         publication.setDescription(description);
 
@@ -88,7 +94,7 @@ public class PublicationService {
         }
 
         publicationRepository.save(publication);
-        return modelMapper.map(publication, PublicationDTO.class);
+        return modelMapper.map(publication, PublicationCreationResponseDto.class);
     }
 
     private FileType detectFileType(MultipartFile file) {
@@ -109,22 +115,6 @@ public class PublicationService {
         Publication publication = publicationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Publicación no encontrada con ID: " + id));
         publicationRepository.delete(publication);
-    }
-
-    public List<LikeDTO> getLikesByPublication(Long publicationId) {
-        Publication publication = publicationRepository.findById(publicationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Publicación no encontrada con ID: " + publicationId));
-
-        return publication.getPublicationLikes().stream()
-                .map(like -> modelMapper.map(like, LikeDTO.class))
-                .collect(Collectors.toList());
-    }
-
-
-    public int getLikeCount(Long publicationId) {
-        Publication publication = publicationRepository.findById(publicationId)
-                .orElseThrow(() -> new RuntimeException("Publicación no encontrada"));
-        return publication.getPublicationLikes().size();
     }
 
 }

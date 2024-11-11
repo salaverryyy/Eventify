@@ -5,8 +5,8 @@ import com.eventos.recuerdos.eventify_project.comment.infrastructure.CommentRepo
 import com.eventos.recuerdos.eventify_project.exception.ResourceNotFoundException;
 import com.eventos.recuerdos.eventify_project.publication.domain.Publication;
 import com.eventos.recuerdos.eventify_project.publication.infrastructure.PublicationRepository;
-import com.eventos.recuerdos.eventify_project.user.domain.User;
-import com.eventos.recuerdos.eventify_project.user.infrastructure.UserRepository;
+import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
+import com.eventos.recuerdos.eventify_project.user.infrastructure.UserAccountRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,11 +24,10 @@ public class CommentService {
     private PublicationRepository publicationRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private UserAccountRepository userAccountRepository;
 
     @Autowired
     private ModelMapper modelMapper;
-
 
     // Obtener los detalles de un comentario por ID
     public CommentDTO getCommentById(Long id) {
@@ -38,19 +37,21 @@ public class CommentService {
     }
 
     // Crear un nuevo comentario en una publicación
-    public CommentDTO createComment(Long publicationId, CommentDTO commentDTO) {
+    public CommentDTO createComment(Long publicationId, CommentDTO commentDTO, String userEmail) {
         // Verificar si la publicación existe
         Publication publication = publicationRepository.findById(publicationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Publicación no encontrada con id: " + publicationId));
 
         // Verificar si el usuario existe
-        User user = userRepository.findById(commentDTO.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + commentDTO.getUserId()));
+        UserAccount userAccount = userAccountRepository.findByEmail(userEmail);
+        if (userAccount == null) {
+            throw new ResourceNotFoundException("Usuario no encontrado con email: " + userEmail);
+        }
 
         // Mapear el DTO a la entidad Comment
         Comment comment = modelMapper.map(commentDTO, Comment.class);
         comment.setPublication(publication); // Asociar con la publicación
-        comment.setUser(user); // Asociar con el usuario
+        comment.setUserAccount(userAccount); // Asociar con el usuario
 
         // Asignar la fecha de creación
         comment.setCommentDate(LocalDateTime.now());
@@ -61,7 +62,6 @@ public class CommentService {
         // Retornar el DTO del comentario creado
         return modelMapper.map(comment, CommentDTO.class);
     }
-
 
     // Actualizar un comentario por ID
     public CommentDTO updateComment(Long id, CommentDTO commentDTO) {
@@ -89,7 +89,7 @@ public class CommentService {
                 .collect(Collectors.toList());
     }
 
-    //Obtener todos los comentarios creados
+    // Obtener todos los comentarios creados
     public List<CommentDTO> getAllComments() {
         List<Comment> comments = commentRepository.findAll();
         return comments.stream()

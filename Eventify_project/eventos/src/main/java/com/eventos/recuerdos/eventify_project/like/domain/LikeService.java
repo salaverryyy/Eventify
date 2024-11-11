@@ -5,17 +5,16 @@ import com.eventos.recuerdos.eventify_project.like.dto.LikeDTO;
 import com.eventos.recuerdos.eventify_project.like.infrastructure.LikeRepository;
 import com.eventos.recuerdos.eventify_project.publication.domain.Publication;
 import com.eventos.recuerdos.eventify_project.publication.infrastructure.PublicationRepository;
-import com.eventos.recuerdos.eventify_project.user.domain.User;
+import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
 import com.eventos.recuerdos.eventify_project.user.dto.UserDTO;
-import com.eventos.recuerdos.eventify_project.user.infrastructure.UserRepository;
+import com.eventos.recuerdos.eventify_project.user.infrastructure.UserAccountRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,39 +24,37 @@ public class LikeService {
     @Autowired
     private PublicationRepository publicationRepository;
     @Autowired
-    private UserRepository userRepository;
+    private UserAccountRepository userAccountRepository;
     @Autowired
     private ModelMapper modelMapper;
 
     // Dar "me gusta" a una publicación
-    public void likePublication(Long publicationId) {
+    public void likePublication(Long publicationId, String userEmail) {
         // Buscar la publicación por su ID
         Publication publication = publicationRepository.findById(publicationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Publicación no encontrada con id: " + publicationId));
 
-        // Obtener el usuario autenticado desde el SecurityContext
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new IllegalStateException("Usuario no autenticado");
+        // Obtener el usuario autenticado
+        UserAccount userAccount = userAccountRepository.findByEmail(userEmail);
+        if (userAccount == null) {
+            throw new ResourceNotFoundException("Usuario no encontrado con email: " + userEmail);
         }
 
-        // Obtener los detalles del usuario autenticado
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        String username = userDetails.getUsername();
+        // Verificar si el usuario ya ha dado "me gusta" a la publicación
+        Optional<PublicationLike> existingLike = likeRepository.findByPublicationAndUserAccount(publication, userAccount);
 
-        // Buscar al usuario en la base de datos usando el username
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con username: " + username));
-
-        // Crear una instancia de PublicationLike y guardarla
-        PublicationLike publicationLike = new PublicationLike();
-        publicationLike.setPublication(publication);
-        publicationLike.setUser(user);
-
-        // Guardar el like en la base de datos
-        likeRepository.save(publicationLike);
+        if (existingLike.isPresent()) {
+            // Si existe, quitar el "me gusta"
+            likeRepository.delete(existingLike.get());
+        } else {
+            // Si no existe, crear un nuevo "me gusta"
+            PublicationLike publicationLike = new PublicationLike();
+            publicationLike.setPublication(publication);
+            publicationLike.setUserAccount(userAccount);
+            publicationLike.setLikeDate(LocalDateTime.now());
+            likeRepository.save(publicationLike);
+        }
     }
-
 
 
     // Obtener la lista de usuarios que han dado "me gusta" a una publicación
@@ -67,29 +64,19 @@ public class LikeService {
 
         return likeRepository.findByPublication(publication)
                 .stream()
-                .map(publicationLike -> modelMapper.map(publicationLike.getUser(), UserDTO.class))
+                .map(publicationLike -> modelMapper.map(publicationLike.getUserAccount(), UserDTO.class))
                 .collect(Collectors.toList());
     }
 
-    // Quitar "me gusta" de una publicación
-    public void unlikePublication(Long publicationId, Long userId) {
+    // Método para obtener la cantidad de "me gusta" en una publicación
+    public int getLikeCountByPublication(Long publicationId) {
         Publication publication = publicationRepository.findById(publicationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Publicación no encontrada con id: " + publicationId));
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + userId));
-
-        PublicationLike publicationLike = likeRepository.findByPublicationAndUser(publication, user)
-                .orElseThrow(() -> new ResourceNotFoundException("El usuario no ha dado 'me gusta' a esta publicación."));
-
-        // Quitar el like y reducir el contador
-        likeRepository.delete(publicationLike);
-        publication.setLikeCount(publication.getLikeCount() - 1);
-        publicationRepository.save(publication);  // Actualizar la publicación
+        return likeRepository.countByPublication(publication);
     }
 
 
-    //obtener todos los likes dados
+    // Obtener todos los likes dados
     public List<LikeDTO> getAllLikes() {
         List<PublicationLike> publicationLikes = likeRepository.findAll();
         return publicationLikes.stream()

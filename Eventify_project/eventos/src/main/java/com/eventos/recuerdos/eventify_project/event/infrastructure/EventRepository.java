@@ -9,6 +9,7 @@ import java.util.List;
 @Repository
 public interface EventRepository extends JpaRepository<Event, Long> {
     void deleteByOrganizer_Id(Long organizerId);
+    Event findEventById(Long id);
 
 
 }
