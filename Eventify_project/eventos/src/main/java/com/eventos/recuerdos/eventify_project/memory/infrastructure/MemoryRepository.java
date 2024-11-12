@@ -22,7 +22,10 @@ public interface MemoryRepository extends JpaRepository<Memory, Long> {
     Memory findByAccessCode(String accessCode);
 
     List<Memory> findByUserAccountId(Long userId);
+
     @Query("SELECT m FROM Memory m JOIN m.participants p WHERE p.id = :userId")
     List<Memory> findMemoriesByParticipantsId(@Param("userId") Long userId);
+
+
 
 }
