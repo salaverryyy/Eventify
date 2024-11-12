@@ -87,11 +87,15 @@ public class MemoryService {
         String albumLink = generateAlbumLinkWithUUID();
         memory.setAlbumLink(albumLink);
 
-        // Guardar el Memory con el albumLink ya asignado
+        // Agregar al creador como participante
+        memory.getParticipants().add(userAccount);
+
+        // Guardar el Memory con el albumLink y participantes
         Memory savedMemory = memoryRepository.save(memory);
 
         return modelMapper.map(savedMemory, MemoryDTO.class);
     }
+
 
     // Método para generar el albumLink usando UUID
     private String generateAlbumLinkWithUUID() {
@@ -130,6 +134,14 @@ public class MemoryService {
     }
 
     public List<MemoryEventDto> getMemoriesForUser(Long userId) {
+        // Obtener recuerdos creados por el usuario
+        List<Memory> createdMemories = memoryRepository.findByUserAccountId(userId);
+        // Obtener recuerdos en los cuales el usuario ha sido invitado y aceptado
+        List<Memory> invitedMemories = invitationRepository.findAcceptedMemoriesByUserId(userId);
+        // Combinar ambas listas
+        List<Memory> allMemories = new ArrayList<>();
+        allMemories.addAll(createdMemories);
+        allMemories.addAll(invitedMemories);
         // Obtener recuerdos donde el usuario es creador o participante
         List<Memory> userMemories = memoryRepository.findMemoriesByParticipantsId(userId);
 
@@ -138,6 +150,7 @@ public class MemoryService {
                 .map(this::convertToMemoryEventDto)
                 .collect(Collectors.toList());
     }
+
 
 
     private MemoryEventDto convertToMemoryEventDto(Memory memory) {
@@ -156,6 +169,7 @@ public class MemoryService {
 
         return dto;
     }
+
 
     public List<MemoryDTO> getAllMemories() {
         List<Memory> memories = memoryRepository.findAll();
