@@ -1,10 +1,13 @@
 package com.eventos.recuerdos.eventify_project.memory.application;
 
 import com.eventos.recuerdos.eventify_project.exception.ResourceBadRequestException;
+import com.eventos.recuerdos.eventify_project.exception.ResourceNotFoundException;
+import com.eventos.recuerdos.eventify_project.memory.domain.Memory;
 import com.eventos.recuerdos.eventify_project.memory.domain.MemoryService;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryEventDto;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryWithPublicationsDTO;
+import com.eventos.recuerdos.eventify_project.memory.infrastructure.MemoryRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,6 +26,9 @@ public class MemoryController {
 
     @Autowired
     private MemoryService memoryService;
+
+    @Autowired
+    private MemoryRepository memoryRepository;
 
     @GetMapping("/{id}")
     public ResponseEntity<MemoryDTO> getMemoryById(@PathVariable Long id) {
@@ -50,8 +56,15 @@ public class MemoryController {
     }
 
 
+    @GetMapping("/{id}/album-uuid")
+    public ResponseEntity<String> getAlbumUUID(@PathVariable Long id) {
+        Memory memory = memoryService.getMemoryEntityById(id);  // Usamos el nuevo método que devuelve Memory
 
+        String albumLink = memory.getAlbumLink();
+        String uuid = albumLink.substring(albumLink.lastIndexOf('/') + 1);
 
+        return ResponseEntity.ok(uuid);
+    }
 
 
     @PutMapping("/{id}")
