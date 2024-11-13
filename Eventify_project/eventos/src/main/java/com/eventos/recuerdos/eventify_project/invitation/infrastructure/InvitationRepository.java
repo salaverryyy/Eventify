@@ -33,4 +33,7 @@ public interface InvitationRepository extends JpaRepository<Invitation, Long> {
 
     Optional<Invitation> findById(Long id);
 
+    @Query("SELECT i FROM Invitation i WHERE i.uuid = :uuid")
+    Optional<Invitation> findByUuid(@Param("uuid") String uuid);
+
 }

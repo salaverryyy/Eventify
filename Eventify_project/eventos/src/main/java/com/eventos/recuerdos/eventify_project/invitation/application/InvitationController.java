@@ -12,7 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/invitation")
@@ -31,13 +33,18 @@ public class InvitationController {
         return ResponseEntity.ok(status);
     }
 
-    // Aceptar una invitación
-    @PutMapping("/{id}/accept")
-    public ResponseEntity<String> acceptInvitation(@PathVariable Long id, Principal principal) {
+    @PostMapping("/confirm/{uuid}")
+    public ResponseEntity<Map<String, String>> acceptInvitation(@PathVariable String uuid, Principal principal) {
         String userEmail = principal.getName();
-        invitationService.acceptInvitation(id, userEmail);
-        return ResponseEntity.ok("Invitación aceptada.");
+        String albumLink = invitationService.acceptInvitation(uuid, userEmail);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("albumLink", albumLink);
+
+        return ResponseEntity.ok(response);
     }
+
+
 
 
     // Rechazar una invitación

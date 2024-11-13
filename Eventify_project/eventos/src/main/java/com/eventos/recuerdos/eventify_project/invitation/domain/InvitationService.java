@@ -50,8 +50,8 @@ public class InvitationService {
         return statusDto;
     }
 
-    public String acceptInvitation(Long invitationId, String userEmail) {
-        Invitation invitation = invitationRepository.findById(invitationId)
+    public String acceptInvitation(String invitationUUID, String userEmail) {
+        Invitation invitation = invitationRepository.findByUuid(invitationUUID)
                 .orElseThrow(() -> new ResourceNotFoundException("Invitación no encontrada"));
 
         UserAccount invitedUser = userAccountRepository.findByEmail(userEmail);
@@ -59,24 +59,30 @@ public class InvitationService {
             throw new ResourceNotFoundException("Usuario no encontrado");
         }
 
-        invitation.setStatus(InvitationStatus.ACCEPTED);
-        invitationRepository.save(invitation);
+        // Actualizar el estado de la invitación a ACCEPTED si no lo está ya
+        if (invitation.getStatus() != InvitationStatus.ACCEPTED) {
+            invitation.setStatus(InvitationStatus.ACCEPTED);
+            invitationRepository.save(invitation);
 
-        // Agregar usuario a la lista de participantes del álbum
-        Memory memory = invitation.getMemory();
-        if (!memory.getParticipants().contains(invitedUser)) {
-            memory.getParticipants().add(invitedUser);
-            memoryRepository.save(memory);
+            // Agregar el usuario a la lista de participantes del Memory
+            Memory memory = invitation.getMemory();
+            if (!memory.getParticipants().contains(invitedUser)) {
+                memory.getParticipants().add(invitedUser);
+                memoryRepository.save(memory);
+            }
+
+            // Agregar la invitación a la lista de invitaciones aceptadas del usuario
+            if (!invitedUser.getAcceptedInvitations().contains(invitation)) {
+                invitedUser.getAcceptedInvitations().add(invitation);
+                userAccountRepository.save(invitedUser);
+            }
         }
 
-        // Agregar la invitación a la lista de invitaciones aceptadas del usuario
-        if (!invitedUser.getAcceptedInvitations().contains(invitation)) {
-            invitedUser.getAcceptedInvitations().add(invitation);
-            userAccountRepository.save(invitedUser);
-        }
-
-        return "Invitación aceptada.";
+        // Devolver el albumLink asociado al Memory de la invitación
+        return invitation.getMemory().getAlbumLink();
     }
+
+
 
 
     public void rejectInvitation(Long id) {
@@ -110,10 +116,24 @@ public class InvitationService {
                 throw new ResourceNotFoundException("Usuario no encontrado con nombre de usuario: " + username);
             }
 
-            String confirmationLink = generateConfirmationLink();
+            // Crear y guardar la invitación antes de generar el enlace de confirmación
+            Invitation invitation = new Invitation();
+            invitation.setGuestEmail(invitedUser.getEmail());
+            invitation.setUsuarioInvitador(sender);
+            invitation.setStatus(InvitationStatus.PENDING);
+            invitation.setMemory(memory);
+            invitation.setAlbumLink(memory.getAlbumLink());
+
+            invitationRepository.save(invitation);
+
+            // Generar el enlace de confirmación usando el UUID de la invitación guardada
+            String confirmationLink = generateConfirmationLink(invitation);
+
+            // Crear el DTO de la invitación y agregarlo a la lista
             InvitationDto invitationDto = createAndSaveInvitation(invitedUser.getEmail(), sender, memory, confirmationLink);
             invitations.add(invitationDto);
 
+            // Crear y publicar el evento de correo electrónico
             InvitationEmailEvent emailEvent = new InvitationEmailEvent(
                     invitedUser.getEmail(),
                     invitationDto.getQrCode(),
@@ -143,10 +163,10 @@ public class InvitationService {
         return invitationDto;
     }
 
-    private String generateConfirmationLink() {
-        String uniqueToken = UUID.randomUUID().toString();
-        return CONFIRMATION_URL + uniqueToken;
+    private String generateConfirmationLink(Invitation invitation) {
+        return CONFIRMATION_URL + invitation.getUuid();
     }
+
 
     private String generateQRCode(String confirmationLink) {
         String qrApiUrl = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + confirmationLink;
