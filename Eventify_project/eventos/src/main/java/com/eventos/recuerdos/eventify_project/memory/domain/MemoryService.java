@@ -170,6 +170,14 @@ public class MemoryService {
         return dto;
     }
 
+    public Memory getMemoryByUUID(String uuid) {
+        Memory memory = memoryRepository.findByAlbumLinkContaining(uuid);
+        if (memory == null) {
+            throw new ResourceNotFoundException("No se encontró el recuerdo con UUID: " + uuid);
+        }
+        return memory;
+    }
+
 
     public List<MemoryDTO> getAllMemories() {
         List<Memory> memories = memoryRepository.findAll();
