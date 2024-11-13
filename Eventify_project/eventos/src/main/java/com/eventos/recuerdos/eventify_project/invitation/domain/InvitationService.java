@@ -31,7 +31,7 @@ public class InvitationService {
     @Autowired
     private MemoryRepository memoryRepository;
 
-    private static final String CONFIRMATION_URL = "http://localhost:3000/confirm/";
+    private static final String CONFIRMATION_URL = "http://localhost:5173/confirm/";
 
     @Autowired
     private ApplicationEventPublisher eventPublisher;

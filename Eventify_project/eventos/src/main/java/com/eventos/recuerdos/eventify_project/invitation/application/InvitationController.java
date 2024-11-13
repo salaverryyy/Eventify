@@ -1,8 +1,10 @@
 package com.eventos.recuerdos.eventify_project.invitation.application;
 
 import com.eventos.recuerdos.eventify_project.exception.ResourceNotFoundException;
+import com.eventos.recuerdos.eventify_project.invitation.domain.Invitation;
 import com.eventos.recuerdos.eventify_project.invitation.dto.*;
 import com.eventos.recuerdos.eventify_project.invitation.domain.InvitationService;
+import com.eventos.recuerdos.eventify_project.invitation.infrastructure.InvitationRepository;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,6 +20,9 @@ public class InvitationController {
 
     @Autowired
     private InvitationService invitationService;
+
+    @Autowired
+    private InvitationRepository invitationRepository;
 
     // Obtener el estado de una invitación
     @GetMapping("/{id}")
@@ -69,6 +74,16 @@ public class InvitationController {
         List<InvitationDto> acceptedInvitations = invitationService.getAcceptedInvitations(memoryId);
         return ResponseEntity.ok(acceptedInvitations);
     }
+
+    @GetMapping("/{invitationId}/album-uuid")
+    public ResponseEntity<String> getAlbumUUIDByInvitationId(@PathVariable Long invitationId) {
+        Invitation invitation = invitationRepository.findById(invitationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Invitación no encontrada"));
+
+        String albumUUID = invitation.getMemory().getAlbumLink();
+        return ResponseEntity.ok(albumUUID);
+    }
+
 
     // Obtener todas las invitaciones creadas
     @GetMapping
