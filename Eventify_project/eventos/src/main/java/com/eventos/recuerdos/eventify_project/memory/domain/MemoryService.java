@@ -139,12 +139,14 @@ public class MemoryService {
         // Obtener recuerdos creados por el usuario
         List<Memory> createdMemories = memoryRepository.findByUserAccountId(userId);
 
-        // Obtener recuerdos en los cuales el usuario ha sido invitado y aceptado usando la nueva lista de acceptedInvitations
+        // Obtener recuerdos en los cuales el usuario ha sido invitado y aceptado usando la nueva lista de acceptedInvitations,
+        // excluyendo los que el usuario haya creado.
         List<Memory> invitedMemories = user.getAcceptedInvitations().stream()
                 .map(Invitation::getMemory)
+                .filter(memory -> !memory.getUserAccount().getId().equals(userId))
                 .collect(Collectors.toList());
 
-        // Combinar todas las listas en una única lista
+        // Combinar las listas en una única lista
         List<Memory> allMemories = new ArrayList<>();
         allMemories.addAll(createdMemories);
         allMemories.addAll(invitedMemories);
