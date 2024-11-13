@@ -31,5 +31,6 @@ public interface InvitationRepository extends JpaRepository<Invitation, Long> {
     @Query("SELECT i FROM Invitation i WHERE i.usuarioInvitado.email = :email AND i.status = :status")
     List<Invitation> findAllByEmailAndStatus(@Param("email") String email, @Param("status") InvitationStatus status);
 
+    Optional<Invitation> findById(Long id);
 
 }
