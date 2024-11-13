@@ -69,9 +69,14 @@ public class InvitationService {
             memoryRepository.save(memory);
         }
 
+        // Agregar la invitación a la lista de invitaciones aceptadas del usuario
+        if (!invitedUser.getAcceptedInvitations().contains(invitation)) {
+            invitedUser.getAcceptedInvitations().add(invitation);
+            userAccountRepository.save(invitedUser);
+        }
+
         return "Invitación aceptada.";
     }
-
 
 
     public void rejectInvitation(Long id) {

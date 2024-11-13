@@ -4,6 +4,7 @@ import com.eventos.recuerdos.eventify_project.invitation.domain.Invitation;
 import com.eventos.recuerdos.eventify_project.memory.domain.Memory;
 import com.eventos.recuerdos.eventify_project.notification.domain.Notification;
 import com.eventos.recuerdos.eventify_project.publication.domain.Publication;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -47,21 +48,29 @@ public class UserAccount implements UserDetails {
     private Boolean credentialsExpired = false;
     private Boolean enable = true;
 
-    // Relaciones con otras entidades
     @OneToMany(mappedBy = "userAccount", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<Memory> memories = new ArrayList<>(); // Lista de recuerdos creados
+    @JsonIgnore
+    private List<Memory> memories = new ArrayList<>();
 
     @OneToMany(mappedBy = "usuarioInvitador", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<Invitation> invitationsSent = new ArrayList<>(); // Invitaciones enviadas
+    @JsonIgnore
+    private List<Invitation> invitationsSent = new ArrayList<>();
 
     @OneToMany(mappedBy = "usuarioInvitado", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<Invitation> invitationsReceived = new ArrayList<>(); // Invitaciones recibidas
+    @JsonIgnore
+    private List<Invitation> invitationsReceived = new ArrayList<>();
+
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private List<Invitation> acceptedInvitations = new ArrayList<>();
 
     @OneToMany(mappedBy = "userAccountReceiver", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<Notification> notifications = new ArrayList<>(); // Notificaciones recibidas
+    @JsonIgnore
+    private List<Notification> notifications = new ArrayList<>();
 
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<Publication> publications = new ArrayList<>(); // Publicaciones hechas
+    @JsonIgnore
+    private List<Publication> publications = new ArrayList<>();
 
     // Métodos de UserDetails
     @Override
