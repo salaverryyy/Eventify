@@ -4,6 +4,7 @@ import com.eventos.recuerdos.eventify_project.event.dto.EventBasicDto;
 import com.eventos.recuerdos.eventify_project.exception.ResourceConflictException;
 import com.eventos.recuerdos.eventify_project.exception.ResourceNotFoundException;
 import com.eventos.recuerdos.eventify_project.invitation.infrastructure.InvitationRepository;
+import com.eventos.recuerdos.eventify_project.invitation.domain.Invitation;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryEventDto;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryWithPublicationsDTO;
@@ -19,10 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -134,19 +132,25 @@ public class MemoryService {
     }
 
     public List<MemoryEventDto> getMemoriesForUser(Long userId) {
+        // Obtener el usuario por su ID
+        UserAccount user = userAccountRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+
         // Obtener recuerdos creados por el usuario
         List<Memory> createdMemories = memoryRepository.findByUserAccountId(userId);
-        // Obtener recuerdos en los cuales el usuario ha sido invitado y aceptado
-        List<Memory> invitedMemories = invitationRepository.findAcceptedMemoriesByUserId(userId);
-        // Combinar ambas listas
+
+        // Obtener recuerdos en los cuales el usuario ha sido invitado y aceptado usando la nueva lista de acceptedInvitations
+        List<Memory> invitedMemories = user.getAcceptedInvitations().stream()
+                .map(Invitation::getMemory)
+                .collect(Collectors.toList());
+
+        // Combinar todas las listas en una única lista
         List<Memory> allMemories = new ArrayList<>();
         allMemories.addAll(createdMemories);
         allMemories.addAll(invitedMemories);
-        // Obtener recuerdos donde el usuario es creador o participante
-        List<Memory> userMemories = memoryRepository.findMemoriesByParticipantsId(userId);
 
         // Convertir a MemoryEventDto
-        return userMemories.stream()
+        return allMemories.stream()
                 .map(this::convertToMemoryEventDto)
                 .collect(Collectors.toList());
     }
