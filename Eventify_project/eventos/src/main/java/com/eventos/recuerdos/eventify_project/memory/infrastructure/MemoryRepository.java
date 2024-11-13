@@ -26,6 +26,6 @@ public interface MemoryRepository extends JpaRepository<Memory, Long> {
     @Query("SELECT m FROM Memory m JOIN m.participants p WHERE p.id = :userId")
     List<Memory> findMemoriesByParticipantsId(@Param("userId") Long userId);
 
-
+    Memory findByAlbumLinkContaining(String uuid);
 
 }
