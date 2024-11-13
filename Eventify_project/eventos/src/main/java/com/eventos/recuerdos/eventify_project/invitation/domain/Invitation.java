@@ -8,6 +8,8 @@ import lombok.Data;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import java.util.UUID;
+
 @Entity
 @Data
 @Table(name = "invitations", uniqueConstraints = {
@@ -28,6 +30,16 @@ public class Invitation {
 
     @Enumerated(EnumType.STRING)
     private InvitationStatus status;
+
+    @Column(unique = true, nullable = false)
+    private String uuid;
+
+    @PrePersist
+    public void generateUUID() {
+        if (this.uuid == null) {
+            this.uuid = UUID.randomUUID().toString();
+        }
+    }
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
