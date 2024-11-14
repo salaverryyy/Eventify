@@ -3,6 +3,7 @@ package com.eventos.recuerdos.eventify_project.user.application;
 import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationDto;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
 import com.eventos.recuerdos.eventify_project.notification.dto.NotificationDTO;
+import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
 import com.eventos.recuerdos.eventify_project.user.domain.UserAccountService;
 import com.eventos.recuerdos.eventify_project.user.dto.UserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/usuarios")
@@ -81,4 +84,23 @@ public class UserController {
         return ResponseEntity.ok(notifications);
     }
 
+    @PostMapping("/{id}/add-friend")
+    public ResponseEntity<Void> addFriend(@PathVariable Long id, @RequestBody Map<String, String> payload) {
+        String friendUsername = payload.get("friendUsername");
+        userAccountService.addFriendByUsername(id, friendUsername);
+        return ResponseEntity.ok().build();
+    }
+
+
+    @DeleteMapping("/{id}/remove-friend/{friendId}")
+    public ResponseEntity<Void> removeFriend(@PathVariable Long id, @PathVariable Long friendId) {
+        userAccountService.removeFriend(id, friendId);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{id}/friends")
+    public ResponseEntity<Set<UserDTO>> getFriends(@PathVariable Long id) {
+        Set<UserDTO> friends = userAccountService.getFriends(id);
+        return ResponseEntity.ok(friends);
+    }
 }
