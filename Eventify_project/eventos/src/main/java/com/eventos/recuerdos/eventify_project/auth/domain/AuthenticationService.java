@@ -5,6 +5,7 @@ import com.eventos.recuerdos.eventify_project.auth.dto.JwtAuthenticationResponse
 import com.eventos.recuerdos.eventify_project.auth.dto.LoginResponseDto;
 import com.eventos.recuerdos.eventify_project.auth.dto.SigninRequest;
 import com.eventos.recuerdos.eventify_project.auth.dto.UserSignupRequestDto;
+import com.eventos.recuerdos.eventify_project.exception.ResourceConflictException;
 import com.eventos.recuerdos.eventify_project.securityconfig.domain.JwtService;
 import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
 import com.eventos.recuerdos.eventify_project.user.domain.Role;
@@ -35,38 +36,45 @@ public class AuthenticationService {
     private ApplicationEventPublisher applicationEventPublisher;
 
     public JwtAuthenticationResponse signup(UserSignupRequestDto requestDto) {
-        // Verificar que las contraseñas coincidan
+        // Check if the username or email is already in use
+        if (userRepository.existsByUsername(requestDto.getUsername())) {
+            throw new ResourceConflictException("El nombre de usuario ya está en uso.");
+        }
+        if (userRepository.existsByEmail(requestDto.getEmail())) {
+            throw new ResourceConflictException("El correo electrónico ya está en uso.");
+        }
+
+        // Verify that passwords match
         if (!requestDto.getPassword().equals(requestDto.getConfirmPassword())) {
             throw new IllegalArgumentException("Las contraseñas no coinciden.");
         }
 
-        // Crear y configurar el nuevo UserAccount a partir del DTO
+        // Create and configure the new UserAccount from the DTO
         UserAccount user = new UserAccount();
         user.setFirstName(requestDto.getFirstName());
         user.setLastName(requestDto.getLastName());
         user.setUsername(requestDto.getUsername());
         user.setEmail(requestDto.getEmail());
         user.setPassword(passwordEncoder.encode(requestDto.getPassword()));
-        user.setRole(Role.USER);  // Asignar el rol USER por defecto
+        user.setRole(Role.USER);  // Default role as USER
 
-        // Guardar el usuario en la base de datos
+        // Save the user to the database
         userRepository.save(user);
 
-        // Generar token JWT
+        // Generate JWT token
         var jwt = jwtService.generateToken(user);
 
-        // Crear respuesta con el token y el userId
+        // Create response with token and userId
         JwtAuthenticationResponse response = new JwtAuthenticationResponse(jwt, user.getId());
 
-        // Publicar el evento para enviar el correo de bienvenida
+        // Publish event to send a welcome email
         applicationEventPublisher.publishEvent(new HelloEmailEvent(user.getEmail()));
 
         return response;
     }
 
-
-
     public LoginResponseDto signin(SigninRequest request) {
+        // Authenticate user
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
         var user = userRepository.findByEmail(request.getEmail());
@@ -74,5 +82,5 @@ public class AuthenticationService {
 
         return new LoginResponseDto(jwt);
     }
-
 }
+
