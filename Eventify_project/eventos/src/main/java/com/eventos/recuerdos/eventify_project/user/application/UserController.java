@@ -1,11 +1,16 @@
 package com.eventos.recuerdos.eventify_project.user.application;
 
+import com.eventos.recuerdos.eventify_project.exception.ResourceNotFoundException;
+import com.eventos.recuerdos.eventify_project.invitation.domain.Invitation;
+import com.eventos.recuerdos.eventify_project.invitation.domain.InvitationStatus;
 import com.eventos.recuerdos.eventify_project.invitation.dto.InvitationDto;
+import com.eventos.recuerdos.eventify_project.invitation.infrastructure.InvitationRepository;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
 import com.eventos.recuerdos.eventify_project.notification.dto.NotificationDTO;
 import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
 import com.eventos.recuerdos.eventify_project.user.domain.UserAccountService;
 import com.eventos.recuerdos.eventify_project.user.dto.UserDTO;
+import com.eventos.recuerdos.eventify_project.user.infrastructure.UserAccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +28,12 @@ public class UserController {
 
     @Autowired
     private UserAccountService userAccountService;
+
+    @Autowired
+    private UserAccountRepository userAccountRepository;
+
+    @Autowired
+    private InvitationRepository invitationRepository;
 
     @GetMapping("/profile")
     @PreAuthorize("hasRole('USER')")
@@ -84,6 +95,7 @@ public class UserController {
         return ResponseEntity.ok(notifications);
     }
 
+
     @PostMapping("/{id}/add-friend")
     public ResponseEntity<Void> addFriend(@PathVariable Long id, @RequestBody Map<String, String> payload) {
         String friendUsername = payload.get("friendUsername");
@@ -103,4 +115,21 @@ public class UserController {
         Set<UserDTO> friends = userAccountService.getFriends(id);
         return ResponseEntity.ok(friends);
     }
-}
+
+    @GetMapping("/{email}/accepted-invitations")
+    public ResponseEntity<List<Invitation>> getAcceptedInvitationsByEmail(@PathVariable String email) {
+        UserAccount user = userAccountRepository.findByEmail(email);
+        if (user == null) {
+            throw new ResourceNotFoundException("Usuario no encontrado");
+        }
+
+        // Obtener las invitaciones aceptadas
+        List<Invitation> acceptedInvitations = invitationRepository.findAllByEmailAndStatus(email, InvitationStatus.ACCEPTED);
+
+        if (acceptedInvitations.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(acceptedInvitations);
+    }
+

@@ -4,6 +4,7 @@ import com.eventos.recuerdos.eventify_project.event.dto.EventBasicDto;
 import com.eventos.recuerdos.eventify_project.exception.ResourceConflictException;
 import com.eventos.recuerdos.eventify_project.exception.ResourceNotFoundException;
 import com.eventos.recuerdos.eventify_project.invitation.infrastructure.InvitationRepository;
+import com.eventos.recuerdos.eventify_project.invitation.domain.Invitation;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryEventDto;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryWithPublicationsDTO;
@@ -19,10 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -52,11 +50,16 @@ public class MemoryService {
 
 
     public MemoryDTO getMemoryById(Long id) {
-        Memory memory = memoryRepository.findById(id).orElse(null);
-        if (memory == null) {
-            throw new ResourceNotFoundException("No se encontró el recuerdo con ID: " + id);
-        }
+        Memory memory = memoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("No se encontró el recuerdo con ID: " + id));
+
+        // Convertir Memory a MemoryDTO usando ModelMapper o creando manualmente un DTO
         return modelMapper.map(memory, MemoryDTO.class);
+    }
+
+    public Memory getMemoryEntityById(Long id) {
+        return memoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("No se encontró el recuerdo con ID: " + id));
     }
 
     public MemoryDTO createMemory(MemoryDTO memoryDTO, MultipartFile coverPhoto, Principal principal) {
@@ -71,29 +74,31 @@ public class MemoryService {
             throw new ResourceConflictException("Ya existe un recuerdo con el mismo título.");
         }
 
-        // Crear la entidad Memory sin el albumLink
+        // Crear la entidad Memory
         Memory memory = modelMapper.map(memoryDTO, Memory.class);
         memory.setUserAccount(userAccount);
         memory.setMemoryCreationDate(LocalDateTime.now());
         memory.setAccessCode(generateAccessCode()); // Asignar código de acceso único
         memory.setCoverPhoto("https://bucket-s3.s3.amazonaws.com/" + coverPhoto.getOriginalFilename());
 
-        // Agregar el usuario creador a la lista de participantes
+        // Generar y asignar el albumLink basado en un UUID
+        String albumLink = generateAlbumLinkWithUUID();
+        memory.setAlbumLink(albumLink);
+
+        // Agregar al creador como participante
         memory.getParticipants().add(userAccount);
 
-        // Guardar inicialmente el Memory sin el albumLink
+        // Guardar el Memory con el albumLink y participantes
         Memory savedMemory = memoryRepository.save(memory);
-
-        // Ahora genera el albumLink usando el memoryId
-        String albumLink = "http://localhost:5173/album/" + savedMemory.getId();
-        savedMemory.setAlbumLink(albumLink);
-
-        // Guardar nuevamente el Memory con el albumLink actualizado
-        savedMemory = memoryRepository.save(savedMemory);
 
         return modelMapper.map(savedMemory, MemoryDTO.class);
     }
 
+
+    // Método para generar el albumLink usando UUID
+    private String generateAlbumLinkWithUUID() {
+        return "http://localhost:5173/album/" + UUID.randomUUID().toString();
+    }
 
 
     public MemoryDTO updateMemory(Long id, MemoryDTO memoryDTO) {
@@ -127,14 +132,31 @@ public class MemoryService {
     }
 
     public List<MemoryEventDto> getMemoriesForUser(Long userId) {
-        // Obtener recuerdos donde el usuario es creador o participante
-        List<Memory> userMemories = memoryRepository.findMemoriesByParticipantsId(userId);
+        // Obtener el usuario por su ID
+        UserAccount user = userAccountRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+
+        // Obtener recuerdos creados por el usuario
+        List<Memory> createdMemories = memoryRepository.findByUserAccountId(userId);
+
+        // Obtener recuerdos en los cuales el usuario ha sido invitado y aceptado usando la nueva lista de acceptedInvitations,
+        // excluyendo los que el usuario haya creado.
+        List<Memory> invitedMemories = user.getAcceptedInvitations().stream()
+                .map(Invitation::getMemory)
+                .filter(memory -> !memory.getUserAccount().getId().equals(userId))
+                .collect(Collectors.toList());
+
+        // Combinar las listas en una única lista
+        List<Memory> allMemories = new ArrayList<>();
+        allMemories.addAll(createdMemories);
+        allMemories.addAll(invitedMemories);
 
         // Convertir a MemoryEventDto
-        return userMemories.stream()
+        return allMemories.stream()
                 .map(this::convertToMemoryEventDto)
                 .collect(Collectors.toList());
     }
+
 
 
     private MemoryEventDto convertToMemoryEventDto(Memory memory) {
@@ -153,6 +175,15 @@ public class MemoryService {
 
         return dto;
     }
+
+    public Memory getMemoryByUUID(String uuid) {
+        Memory memory = memoryRepository.findByAlbumLinkContaining(uuid);
+        if (memory == null) {
+            throw new ResourceNotFoundException("No se encontró el recuerdo con UUID: " + uuid);
+        }
+        return memory;
+    }
+
 
     public List<MemoryDTO> getAllMemories() {
         List<Memory> memories = memoryRepository.findAll();

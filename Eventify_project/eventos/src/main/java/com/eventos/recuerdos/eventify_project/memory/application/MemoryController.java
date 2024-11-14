@@ -1,14 +1,15 @@
 package com.eventos.recuerdos.eventify_project.memory.application;
 
 import com.eventos.recuerdos.eventify_project.exception.ResourceBadRequestException;
+import com.eventos.recuerdos.eventify_project.memory.domain.Memory;
 import com.eventos.recuerdos.eventify_project.memory.domain.MemoryService;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryEventDto;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryWithPublicationsDTO;
 import jakarta.validation.Valid;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +24,9 @@ public class MemoryController {
 
     @Autowired
     private MemoryService memoryService;
+
+    @Autowired
+    private ModelMapper modelMapper;
 
     @GetMapping("/{id}")
     public ResponseEntity<MemoryDTO> getMemoryById(@PathVariable Long id) {
@@ -50,8 +54,15 @@ public class MemoryController {
     }
 
 
+    @GetMapping("/{id}/album-uuid")
+    public ResponseEntity<String> getAlbumUUID(@PathVariable Long id) {
+        Memory memory = memoryService.getMemoryEntityById(id);  // Usamos el nuevo método que devuelve Memory
 
+        String albumLink = memory.getAlbumLink();
+        String uuid = albumLink.substring(albumLink.lastIndexOf('/') + 1);
 
+        return ResponseEntity.ok(uuid);
+    }
 
 
     @PutMapping("/{id}")
@@ -82,6 +93,13 @@ public class MemoryController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.ok(memories);
+    }
+
+    @GetMapping("/uuid/{uuid}")
+    public ResponseEntity<MemoryDTO> getMemoryByUUID(@PathVariable String uuid) {
+        Memory memory = memoryService.getMemoryByUUID(uuid);
+        MemoryDTO memoryDTO = modelMapper.map(memory, MemoryDTO.class);
+        return ResponseEntity.ok(memoryDTO);
     }
 
     //Obtener todos los memory credos
