@@ -42,7 +42,7 @@ public class SecurityConfig {
                 .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/hello/**").permitAll()  // Rutas públicas
+                        .requestMatchers("/auth/**", "/hello/**", "/api/unsplash/random-image").permitAll()  // Rutas públicas
                         .anyRequest().authenticated()  // Todo lo demás requiere autenticación
                 )
                 .build();

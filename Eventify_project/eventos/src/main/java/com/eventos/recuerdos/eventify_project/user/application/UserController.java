@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/usuarios")
@@ -93,6 +95,27 @@ public class UserController {
         return ResponseEntity.ok(notifications);
     }
 
+
+    @PostMapping("/{id}/add-friend")
+    public ResponseEntity<Void> addFriend(@PathVariable Long id, @RequestBody Map<String, String> payload) {
+        String friendUsername = payload.get("friendUsername");
+        userAccountService.addFriendByUsername(id, friendUsername);
+        return ResponseEntity.ok().build();
+    }
+
+
+    @DeleteMapping("/{id}/remove-friend/{friendId}")
+    public ResponseEntity<Void> removeFriend(@PathVariable Long id, @PathVariable Long friendId) {
+        userAccountService.removeFriend(id, friendId);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{id}/friends")
+    public ResponseEntity<Set<UserDTO>> getFriends(@PathVariable Long id) {
+        Set<UserDTO> friends = userAccountService.getFriends(id);
+        return ResponseEntity.ok(friends);
+    }
+
     @GetMapping("/{email}/accepted-invitations")
     public ResponseEntity<List<Invitation>> getAcceptedInvitationsByEmail(@PathVariable String email) {
         UserAccount user = userAccountRepository.findByEmail(email);
@@ -110,4 +133,3 @@ public class UserController {
         return ResponseEntity.ok(acceptedInvitations);
     }
 
-}
