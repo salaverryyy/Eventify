@@ -12,6 +12,7 @@ import com.eventos.recuerdos.eventify_project.publication.dto.PublicationDTO;
 import com.eventos.recuerdos.eventify_project.publication.infrastructure.PublicationRepository;
 import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
 import com.eventos.recuerdos.eventify_project.user.infrastructure.UserAccountRepository;
+import com.eventos.recuerdos.eventify_project.controllers.StorageService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,25 +20,30 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 public class MemoryService {
+
     @Autowired
     private MemoryRepository memoryRepository;
+
     @Autowired
     private InvitationRepository invitationRepository;
+
     @Autowired
     private PublicationRepository publicationRepository;
+
     @Autowired
     private UserAccountRepository userAccountRepository;
 
     @Autowired
     private ModelMapper modelMapper;
+
+    @Autowired
+    private StorageService storageService;  // Inyección de StorageService para manejar S3
 
     private String generateAccessCode() {
         String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -49,7 +55,6 @@ public class MemoryService {
         }
         return code.toString();
     }
-
 
     public MemoryDTO getMemoryById(Long id) {
         Memory memory = memoryRepository.findById(id).orElse(null);
@@ -75,8 +80,16 @@ public class MemoryService {
         Memory memory = modelMapper.map(memoryDTO, Memory.class);
         memory.setUserAccount(userAccount);
         memory.setMemoryCreationDate(LocalDateTime.now());
-        memory.setAccessCode(generateAccessCode()); // Asignar código de acceso único
-        memory.setCoverPhoto("https://bucket-s3.s3.amazonaws.com/" + coverPhoto.getOriginalFilename());
+        memory.setAccessCode(generateAccessCode());
+
+        // Subir la foto de portada a S3 y almacenar su clave
+        String coverPhotoKey = "cover-pics/" + memory.getId() + "-" + coverPhoto.getOriginalFilename();
+        try {
+            String storedPhotoKey = storageService.uploadFile(coverPhoto, coverPhotoKey);
+            memory.setCoverPhotoKey(storedPhotoKey);  // Almacenar la clave de la foto de portada en S3
+        } catch (Exception e) {
+            throw new RuntimeException("Error al subir la foto de portada", e);
+        }
 
         // Agregar el usuario creador a la lista de participantes
         memory.getParticipants().add(userAccount);
@@ -93,8 +106,6 @@ public class MemoryService {
 
         return modelMapper.map(savedMemory, MemoryDTO.class);
     }
-
-
 
     public MemoryDTO updateMemory(Long id, MemoryDTO memoryDTO) {
         Memory memory = memoryRepository.findById(id).orElse(null);
@@ -127,22 +138,17 @@ public class MemoryService {
     }
 
     public List<MemoryEventDto> getMemoriesForUser(Long userId) {
-        // Obtener recuerdos donde el usuario es creador o participante
         List<Memory> userMemories = memoryRepository.findMemoriesByParticipantsId(userId);
-
-        // Convertir a MemoryEventDto
         return userMemories.stream()
                 .map(this::convertToMemoryEventDto)
                 .collect(Collectors.toList());
     }
 
-
     private MemoryEventDto convertToMemoryEventDto(Memory memory) {
         MemoryEventDto dto = new MemoryEventDto();
         dto.setMemoryId(memory.getId());
-        dto.setCoverPhoto(memory.getCoverPhoto());
+        dto.setCoverPhoto(memory.getCoverPhotoKey());
 
-        // Convertir el evento si existe
         if (memory.getEvent() != null) {
             EventBasicDto eventDto = new EventBasicDto();
             eventDto.setEventId(memory.getEvent().getId());
@@ -160,4 +166,34 @@ public class MemoryService {
                 .map(memory -> modelMapper.map(memory, MemoryDTO.class))
                 .collect(Collectors.toList());
     }
+
+    // Nuevo método: Obtener clave de la foto de portada
+    public String getCoverPhotoKey(Long memoryId) {
+        Memory memory = memoryRepository.findById(memoryId).orElse(null);
+        if (memory == null || memory.getCoverPhotoKey() == null) {
+            throw new ResourceNotFoundException("No se encontró la foto de portada para el recuerdo con ID: " + memoryId);
+        }
+        return memory.getCoverPhotoKey();
+    }
+
+    // Nuevo método: Actualizar la clave de la foto de portada
+    public void updateCoverPhotoKey(Long memoryId, String fileKey) {
+        Memory memory = memoryRepository.findById(memoryId).orElse(null);
+        if (memory == null) {
+            throw new ResourceNotFoundException("No se encontró el recuerdo con ID: " + memoryId);
+        }
+        memory.setCoverPhotoKey(fileKey);
+        memoryRepository.save(memory);
+    }
+
+    // Nuevo método: Eliminar la referencia de la foto de portada
+    public void removeCoverPhotoKey(Long memoryId) {
+        Memory memory = memoryRepository.findById(memoryId).orElse(null);
+        if (memory == null) {
+            throw new ResourceNotFoundException("No se encontró el recuerdo con ID: " + memoryId);
+        }
+        memory.setCoverPhotoKey(null);
+        memoryRepository.save(memory);
+    }
 }
+

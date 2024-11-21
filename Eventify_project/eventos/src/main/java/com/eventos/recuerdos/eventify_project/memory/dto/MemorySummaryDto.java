@@ -8,6 +8,6 @@ public class MemorySummaryDto {
     private Long id;
     private String memoryName;
     private String albumLink;
-    private String coverPhoto;
+    private String coverPhotoKey;
 
 }

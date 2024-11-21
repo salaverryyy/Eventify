@@ -24,7 +24,7 @@ public class MemoryDTO {
 
     private String accessCode;
 
-    private String coverPhoto;
+    private String coverPhotoKey;
 }
 
 //Maneja la información de los recuerdos (álbumes virtuales), sin
