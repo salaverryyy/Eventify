@@ -175,6 +175,10 @@ public class UserAccountService {
         userAccountRepository.save(user);
     }
 
+    public void saveOther(UserAccount user) {
+        userAccountRepository.save(user);
+    }
+
     // Find user by email
     public UserAccount findByEmail(String email) {
         return userAccountRepository.findByEmail(email);

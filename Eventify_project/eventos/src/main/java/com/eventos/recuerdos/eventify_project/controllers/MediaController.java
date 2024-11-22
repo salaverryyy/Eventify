@@ -29,7 +29,7 @@ public class MediaController {
 
         UserAccount user = userService.findByEmail(username);
         user.setProfilePictureKey(fileKey);
-        userService.save(user);
+        userService.saveOther(user);
 
         return ResponseEntity.ok("Profile picture uploaded successfully");
     }
@@ -54,7 +54,7 @@ public class MediaController {
 
         storageService.deleteFile(user.getProfilePictureKey());
         user.setProfilePictureKey(null);
-        userService.save(user);
+        userService.saveOther(user);
 
         return ResponseEntity.ok("Profile picture deleted successfully");
     }

@@ -37,6 +37,7 @@ public class AuthController {
         return ResponseEntity.ok(authenticationService.signin(request));
     }
 
+
     @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");

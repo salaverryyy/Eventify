@@ -29,29 +29,38 @@ public class MemoryController {
 
     // Crear un nuevo recuerdo con una foto de portada
     @PostMapping
-    public ResponseEntity<MemoryDTO> createMemory(
+    public ResponseEntity<?> createMemory(
             @RequestParam("memoryName") String memoryName,
             @RequestParam("description") String description,
-            @RequestParam("coverPhoto") MultipartFile coverPhoto,
+            @RequestParam(value = "coverPhoto", required = false) MultipartFile coverPhoto,
             Principal principal) {
 
-        MemoryDTO memoryDTO = new MemoryDTO();
-        memoryDTO.setMemoryName(memoryName);
-        memoryDTO.setDescription(description);
+        // Validar campos obligatorios
+        if (memoryName == null || memoryName.isBlank() || description == null || description.isBlank()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("El nombre y la descripción son obligatorios.");
+        }
 
         try {
-            // Generar clave única para la portada en S3
-            String coverPhotoKey = "cover-pics/" + principal.getName() + "/" + coverPhoto.getOriginalFilename();
-            String uploadedPhotoKey = storageService.uploadFile(coverPhoto, coverPhotoKey);
+            // Crear el DTO para el nuevo recuerdo
+            MemoryDTO memoryDTO = new MemoryDTO();
+            memoryDTO.setMemoryName(memoryName);
+            memoryDTO.setDescription(description);
 
-            // Asignar la clave de la foto de portada al DTO antes de guardar
-            memoryDTO.setCoverPhotoKey(uploadedPhotoKey);
+            // Subir la foto de portada, si existe
+            if (coverPhoto != null && !coverPhoto.isEmpty()) {
+                String coverPhotoKey = "cover-pics/" + principal.getName() + "/" + coverPhoto.getOriginalFilename();
+                String uploadedPhotoKey = storageService.uploadFile(coverPhoto, coverPhotoKey);
+                memoryDTO.setCoverPhotoKey(uploadedPhotoKey);
+            }
 
+            // Crear el recuerdo en la base de datos
             MemoryDTO createdMemory = memoryService.createMemory(memoryDTO, coverPhoto, principal);
-
             return ResponseEntity.status(HttpStatus.CREATED).body(createdMemory);
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al crear el recuerdo: " + e.getMessage());
         }
     }
 
@@ -76,17 +85,18 @@ public class MemoryController {
             memoryService.removeCoverPhotoKey(id);    // Eliminar referencia en la base de datos
             return ResponseEntity.ok("Foto de portada eliminada exitosamente.");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error al eliminar la foto de portada.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error al eliminar la foto de portada: " + e.getMessage());
         }
     }
 
-    // Otros métodos existentes en el controlador MemoryController
+    // Obtener un recuerdo por ID
     @GetMapping("/{id}")
     public ResponseEntity<MemoryDTO> getMemoryById(@PathVariable Long id) {
         MemoryDTO memoryDTO = memoryService.getMemoryById(id);
         return ResponseEntity.ok(memoryDTO);
     }
 
+    // Actualizar un recuerdo
     @PutMapping("/{id}")
     public ResponseEntity<MemoryDTO> updateMemory(@PathVariable Long id, @Valid @RequestBody MemoryDTO memoryDTO, BindingResult result) {
         if (result.hasErrors()) {
@@ -96,18 +106,21 @@ public class MemoryController {
         return ResponseEntity.ok(updatedMemory);
     }
 
+    // Eliminar un recuerdo
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteMemory(@PathVariable Long id) {
         memoryService.deleteMemory(id);
         return ResponseEntity.noContent().build();
     }
 
+    // Obtener las publicaciones de un recuerdo
     @GetMapping("/{id}/publicaciones")
     public ResponseEntity<MemoryWithPublicationsDTO> getMemoryWithPublications(@PathVariable Long id) {
         MemoryWithPublicationsDTO memoryWithPublications = memoryService.getMemoryWithPublications(id);
         return ResponseEntity.ok(memoryWithPublications);
     }
 
+    // Obtener recuerdos de un usuario específico
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<MemoryEventDto>> getMemoriesForUser(@PathVariable Long userId) {
         List<MemoryEventDto> memories = memoryService.getMemoriesForUser(userId);
@@ -117,9 +130,11 @@ public class MemoryController {
         return ResponseEntity.ok(memories);
     }
 
+    // Obtener todos los recuerdos
     @GetMapping
     public ResponseEntity<List<MemoryDTO>> getAllMemories() {
         List<MemoryDTO> memories = memoryService.getAllMemories();
         return ResponseEntity.ok(memories);
     }
 }
+

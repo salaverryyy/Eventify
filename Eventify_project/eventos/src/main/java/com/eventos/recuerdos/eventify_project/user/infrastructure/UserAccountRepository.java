@@ -12,7 +12,7 @@ import java.util.Optional;
 
 @Repository
 public interface UserAccountRepository extends JpaRepository<UserAccount, Long> {
-    UserAccount findByUsername(String username); // Método existente que devuelve UserAccount
+    UserAccount findByUsername(String username);// Método existente que devuelve UserAccount
     Optional<UserAccount> findOptionalByUsername(String username); // Nuevo método que devuelve Optional<UserAccount>
     UserAccount findByEmail(String email);
     List<UserAccount> findByUsernameContainingIgnoreCase(String username, Pageable pageable);
