@@ -43,7 +43,6 @@ public class UserController {
     }
 
 
-
     //busqueda de usuarios
     @GetMapping("/search")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
@@ -77,10 +76,11 @@ public class UserController {
 
     //Eliminar usuario
     @DeleteMapping("/{id}/delete")
-    public ResponseEntity<?>deleteUser(@PathVariable Long id) {
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         userAccountService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
+
     //obtener los albums donde participa el usuario
     @GetMapping("/{id}/recuerdos")
     public ResponseEntity<List<MemoryDTO>> getUserMemories(@PathVariable Long id) {
@@ -132,4 +132,5 @@ public class UserController {
 
         return ResponseEntity.ok(acceptedInvitations);
     }
+}
 
