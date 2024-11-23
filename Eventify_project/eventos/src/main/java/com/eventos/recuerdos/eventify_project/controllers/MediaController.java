@@ -29,10 +29,11 @@ public class MediaController {
 
         UserAccount user = userService.findByEmail(username);
         user.setProfilePictureKey(fileKey);
-        userService.save(user);
+        userService.saveOther(user);
 
         return ResponseEntity.ok("Profile picture uploaded successfully");
     }
+
 
     @GetMapping("/profile-pic")
     public ResponseEntity<String> getProfilePic(Principal principal) {
