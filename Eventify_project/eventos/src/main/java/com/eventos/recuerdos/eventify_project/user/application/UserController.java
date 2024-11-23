@@ -52,6 +52,8 @@ public class UserController {
     }
 
 
+
+
     // Obtener usuario por ID
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {

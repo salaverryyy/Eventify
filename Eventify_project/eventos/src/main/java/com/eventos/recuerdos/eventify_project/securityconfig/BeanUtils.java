@@ -1,5 +1,7 @@
 package com.eventos.recuerdos.eventify_project.securityconfig;
 
+import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
+import com.eventos.recuerdos.eventify_project.user.dto.UserDTO;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -13,9 +15,15 @@ public class BeanUtils {
 
     @Bean
     public ModelMapper modelMapper() {
-        return new ModelMapper();
-    }
+        ModelMapper modelMapper = new ModelMapper();
 
+        // Configurar el mapeo personalizado para UserAccount -> UserDTO
+        modelMapper.typeMap(UserAccount.class, UserDTO.class).addMappings(mapper -> {
+            mapper.map(UserAccount::getUsernameField, UserDTO::setUsername);
+        });
+
+        return modelMapper;
+    }
 }
 
 
