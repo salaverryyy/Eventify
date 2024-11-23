@@ -59,11 +59,20 @@ public class UserAccountService {
     // Search for users by username with a limit
     public List<UserDTO> searchByUsername(String username) {
         Pageable limit = PageRequest.of(0, 10);
+
+        // Mapea explícitamente el username con getUsernameField
         return userAccountRepository.findByUsernameContainingIgnoreCase(username, limit)
                 .stream()
-                .map(user -> modelMapper.map(user, UserDTO.class))
+                .map(user -> {
+                    UserDTO userDTO = modelMapper.map(user, UserDTO.class);
+                    userDTO.setUsername(user.getUsernameField()); // Asegura que se use el username real
+                    return userDTO;
+                })
                 .collect(Collectors.toList());
     }
+
+
+
 
     // Retrieve user by ID
     public UserDTO getUserById(Long id) {
