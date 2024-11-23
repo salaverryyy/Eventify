@@ -4,6 +4,7 @@ import com.eventos.recuerdos.eventify_project.event.domain.Event;
 import com.eventos.recuerdos.eventify_project.invitation.domain.Invitation;
 import com.eventos.recuerdos.eventify_project.publication.domain.Publication;
 import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -31,23 +32,23 @@ public class Memory {
     @Column(unique = true, nullable = false)
     private String albumLink;
 
-    private String coverPhotoKey; // Foto de portada del álbum
+    private String coverPhoto; // Foto de portada del álbum
 
-    // Relación Many-to-One con User (usuario creador del recuerdo)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
     private UserAccount userAccount;
 
-    // Relación One-to-Many con publicaciones
     @OneToMany(mappedBy = "memory", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @JsonIgnore
     private List<Publication> publications = new ArrayList<>();
 
-    // Relación One-to-Many con invitaciones
     @OneToMany(mappedBy = "memory", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @JsonIgnore
     private List<Invitation> invitations = new ArrayList<>();
 
-    // Relación One-to-One con Event
     @OneToOne(mappedBy = "memory", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private Event event;
 
     @ManyToMany
@@ -56,5 +57,6 @@ public class Memory {
             joinColumns = @JoinColumn(name = "memory_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
+    @JsonIgnore
     private List<UserAccount> participants = new ArrayList<>();
 }

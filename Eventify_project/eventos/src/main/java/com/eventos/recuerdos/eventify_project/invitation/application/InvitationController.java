@@ -1,8 +1,10 @@
 package com.eventos.recuerdos.eventify_project.invitation.application;
 
 import com.eventos.recuerdos.eventify_project.exception.ResourceNotFoundException;
+import com.eventos.recuerdos.eventify_project.invitation.domain.Invitation;
 import com.eventos.recuerdos.eventify_project.invitation.dto.*;
 import com.eventos.recuerdos.eventify_project.invitation.domain.InvitationService;
+import com.eventos.recuerdos.eventify_project.invitation.infrastructure.InvitationRepository;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,7 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/invitation")
@@ -19,6 +23,9 @@ public class InvitationController {
     @Autowired
     private InvitationService invitationService;
 
+    @Autowired
+    private InvitationRepository invitationRepository;
+
     // Obtener el estado de una invitación
     @GetMapping("/{id}")
     public ResponseEntity<InvitationStatusDto> getInvitationStatus(@PathVariable Long id) {
@@ -26,13 +33,18 @@ public class InvitationController {
         return ResponseEntity.ok(status);
     }
 
-    // Aceptar una invitación
-    @PutMapping("/{id}/accept")
-    public ResponseEntity<String> acceptInvitation(@PathVariable Long id, Principal principal) {
+    @PostMapping("/confirm/{uuid}")
+    public ResponseEntity<Map<String, String>> acceptInvitation(@PathVariable String uuid, Principal principal) {
         String userEmail = principal.getName();
-        invitationService.acceptInvitation(id, userEmail);
-        return ResponseEntity.ok("Invitación aceptada.");
+        String albumLink = invitationService.acceptInvitation(uuid, userEmail);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("albumLink", albumLink);
+
+        return ResponseEntity.ok(response);
     }
+
+
 
 
     // Rechazar una invitación
@@ -69,6 +81,16 @@ public class InvitationController {
         List<InvitationDto> acceptedInvitations = invitationService.getAcceptedInvitations(memoryId);
         return ResponseEntity.ok(acceptedInvitations);
     }
+
+    @GetMapping("/{invitationId}/album-uuid")
+    public ResponseEntity<String> getAlbumUUIDByInvitationId(@PathVariable Long invitationId) {
+        Invitation invitation = invitationRepository.findById(invitationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Invitación no encontrada"));
+
+        String albumUUID = invitation.getMemory().getAlbumLink();
+        return ResponseEntity.ok(albumUUID);
+    }
+
 
     // Obtener todas las invitaciones creadas
     @GetMapping
