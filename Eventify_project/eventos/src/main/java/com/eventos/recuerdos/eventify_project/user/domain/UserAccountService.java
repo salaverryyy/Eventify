@@ -188,4 +188,8 @@ public class UserAccountService {
     public UserAccount findByEmail(String email) {
         return userAccountRepository.findByEmail(email);
     }
+
+    public void saveOther(UserAccount user) {
+        userAccountRepository.save(user);
+    }
 }

@@ -1,11 +1,13 @@
 package com.eventos.recuerdos.eventify_project.memory.application;
 
+import com.eventos.recuerdos.eventify_project.controllers.StorageService;
 import com.eventos.recuerdos.eventify_project.exception.ResourceBadRequestException;
 import com.eventos.recuerdos.eventify_project.memory.domain.Memory;
 import com.eventos.recuerdos.eventify_project.memory.domain.MemoryService;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryEventDto;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryWithPublicationsDTO;
+import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
 import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/memories")
 public class MemoryController {
+
+    @Autowired
+    private StorageService storageService;
 
     @Autowired
     private MemoryService memoryService;
@@ -39,12 +44,18 @@ public class MemoryController {
             @RequestParam("memoryName") String memoryName,
             @RequestParam("description") String description,
             @RequestParam("coverPhoto") MultipartFile coverPhoto,
-            Principal principal) {
+            Principal principal) throws Exception {
 
         // Crear el DTO y asignar los valores
         MemoryDTO memoryDTO = new MemoryDTO();
         memoryDTO.setMemoryName(memoryName);
         memoryDTO.setDescription(description);
+
+        String username = principal.getName();
+
+        String objectKey = "cover-pics/" + username;
+        String fileKey = storageService.uploadFile(coverPhoto, objectKey);
+        memoryDTO.setCoverPhoto(fileKey);
 
         // Llamar al servicio para crear el Memory, pasando el Principal y la foto
         MemoryDTO createdMemory = memoryService.createMemory(memoryDTO, coverPhoto, principal);
@@ -107,5 +118,15 @@ public class MemoryController {
     public ResponseEntity<List<MemoryDTO>> getAllMemories() {
         List<MemoryDTO> memories = memoryService.getAllMemories();
         return ResponseEntity.ok(memories);
+    }
+
+    @GetMapping("/{id}/cover-photo")
+    public ResponseEntity<String> getCoverPhoto(@PathVariable Long id) {
+        MemoryDTO memoryDTO = memoryService.getMemoryById(id);
+        if (memoryDTO.getCoverPhoto() == null)
+            return ResponseEntity.notFound().build();
+
+        String presignedUrl = storageService.generatePresignedUrl(memoryDTO.getCoverPhoto());
+        return ResponseEntity.ok(presignedUrl);
     }
 }

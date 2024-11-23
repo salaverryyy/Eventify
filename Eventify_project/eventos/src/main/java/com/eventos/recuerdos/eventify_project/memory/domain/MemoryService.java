@@ -79,7 +79,6 @@ public class MemoryService {
         memory.setUserAccount(userAccount);
         memory.setMemoryCreationDate(LocalDateTime.now());
         memory.setAccessCode(generateAccessCode()); // Asignar código de acceso único
-        memory.setCoverPhoto("https://bucket-s3.s3.amazonaws.com/" + coverPhoto.getOriginalFilename());
 
         // Generar y asignar el albumLink basado en un UUID
         String albumLink = generateAlbumLinkWithUUID();

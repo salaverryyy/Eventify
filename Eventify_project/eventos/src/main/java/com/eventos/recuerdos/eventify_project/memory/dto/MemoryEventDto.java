@@ -9,4 +9,5 @@ public class MemoryEventDto {
     private Long memoryId;
     private String coverPhoto;
     private EventBasicDto event;
+
 }
