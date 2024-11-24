@@ -9,6 +9,7 @@ import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
 import com.eventos.recuerdos.eventify_project.notification.dto.NotificationDTO;
 import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
 import com.eventos.recuerdos.eventify_project.user.domain.UserAccountService;
+import com.eventos.recuerdos.eventify_project.user.dto.UpdateUserDto;
 import com.eventos.recuerdos.eventify_project.user.dto.UserDTO;
 import com.eventos.recuerdos.eventify_project.user.infrastructure.UserAccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,15 +66,17 @@ public class UserController {
     // Actualizar un usuario
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @RequestBody UserDTO userDTO, Principal principal) {
+    public ResponseEntity<UpdateUserDto> updateUser(@PathVariable Long id, @RequestBody UpdateUserDto updateUserDto, Principal principal) {
         // Verifica si el usuario autenticado coincide con el usuario a actualizar
         if (!userAccountService.isAuthorized(id, principal.getName())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        UserDTO updatedUser = userAccountService.updateUser(id, userDTO);
+        // Llamar al servicio para actualizar
+        UpdateUserDto updatedUser = userAccountService.updateUser(id, updateUserDto);
         return ResponseEntity.ok(updatedUser);
     }
+
 
 
     //Eliminar usuario
