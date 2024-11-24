@@ -69,13 +69,14 @@ public class UserAccount implements UserDetails {
     @JsonIgnore
     private List<Memory> memories = new ArrayList<>();
 
-    @OneToMany(mappedBy = "usuarioInvitador", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(mappedBy = "usuarioInvitador", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Invitation> invitationsSent = new ArrayList<>();
 
-    @OneToMany(mappedBy = "usuarioInvitado", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(mappedBy = "usuarioInvitado", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Invitation> invitationsReceived = new ArrayList<>();
+
 
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")

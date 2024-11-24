@@ -10,6 +10,7 @@ import com.eventos.recuerdos.eventify_project.user.dto.UpdateUserDto;
 import com.eventos.recuerdos.eventify_project.user.dto.UserDTO;
 import com.eventos.recuerdos.eventify_project.user.infrastructure.UserAccountRepository;
 import org.modelmapper.ModelMapper;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -112,9 +113,8 @@ public class UserAccountService {
     }
 
 
-
-
     // Delete user along with associated events and memories
+    @Transactional
     public void deleteUser(Long id) {
         eventRepository.deleteByOrganizer_Id(id);
         memoryRepository.deleteByUserAccountId(id);
