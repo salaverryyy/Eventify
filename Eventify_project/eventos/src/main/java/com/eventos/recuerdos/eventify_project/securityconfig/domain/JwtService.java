@@ -78,4 +78,17 @@ public class JwtService {
         byte[] keyBytes = Decoders.BASE64.decode(jwtSigningKey);
         return Keys.hmacShaKeyFor(keyBytes);
     }
+
+    //metodo para extraer el userId del token
+    public Long extractUserIdFromToken(String token) {
+        String jwt = token.replace("Bearer ", "");
+        Claims claims = Jwts.parser()
+                .setSigningKey(jwtSigningKey) // Usa tu clave secreta configurada
+                .parseClaimsJws(jwt)
+                .getBody();
+
+        // Suponiendo que el userId está almacenado como un claim llamado "userId"
+        return Long.parseLong(claims.get("userId").toString());
+    }
+
 }
