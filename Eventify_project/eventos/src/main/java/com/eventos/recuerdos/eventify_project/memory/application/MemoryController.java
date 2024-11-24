@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/memories")
@@ -51,9 +52,7 @@ public class MemoryController {
         memoryDTO.setMemoryName(memoryName);
         memoryDTO.setDescription(description);
 
-        String username = principal.getName();
-
-        String objectKey = "cover-pics/" + username;
+        String objectKey = "cover-pics/" + coverPhoto.getOriginalFilename();
         String fileKey = storageService.uploadFile(coverPhoto, objectKey);
         memoryDTO.setCoverPhoto(fileKey);
 
