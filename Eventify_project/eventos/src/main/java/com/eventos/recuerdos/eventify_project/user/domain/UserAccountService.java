@@ -6,6 +6,7 @@ import com.eventos.recuerdos.eventify_project.exception.ResourceNotFoundExceptio
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
 import com.eventos.recuerdos.eventify_project.memory.infrastructure.MemoryRepository;
 import com.eventos.recuerdos.eventify_project.notification.dto.NotificationDTO;
+import com.eventos.recuerdos.eventify_project.user.dto.UpdateUserDto;
 import com.eventos.recuerdos.eventify_project.user.dto.UserDTO;
 import com.eventos.recuerdos.eventify_project.user.infrastructure.UserAccountRepository;
 import org.modelmapper.ModelMapper;
@@ -82,27 +83,36 @@ public class UserAccountService {
     }
 
     // Update user with unique checks for email and username
-    public UserDTO updateUser(Long id, UserDTO userDTO) {
+    public UpdateUserDto updateUser(Long id, UpdateUserDto updateUserDto) {
         return userAccountRepository.findById(id)
                 .map(user -> {
-                    if (!user.getUsernameField().equals(userDTO.getUsername()) &&
-                            userAccountRepository.existsByUsername(userDTO.getUsername())) {
+                    // Validar cambios en el nombre de usuario
+                    if (!user.getUsernameField().equals(updateUserDto.getUsername()) &&
+                            userAccountRepository.existsByUsername(updateUserDto.getUsername())) {
                         throw new ResourceConflictException("El nombre de usuario ya está en uso.");
                     }
-                    if (!user.getEmail().equals(userDTO.getEmail()) &&
-                            userAccountRepository.existsByEmail(userDTO.getEmail())) {
-                        throw new ResourceConflictException("El correo electrónico ya está en uso.");
-                    }
-                    user.setFirstName(userDTO.getFirstName());
-                    user.setLastName(userDTO.getLastName());
-                    user.setUsername(userDTO.getUsername());
-                    user.setEmail(userDTO.getEmail());
 
+                    // Actualizar los campos relevantes
+                    user.setFirstName(updateUserDto.getFirstName());
+                    user.setLastName(updateUserDto.getLastName());
+                    user.setUsername(updateUserDto.getUsername());
+
+                    // Guardar cambios en la entidad
                     userAccountRepository.save(user);
-                    return modelMapper.map(user, UserDTO.class);
+
+                    // Mapeo explícito al DTO para evitar el método getUsername()
+                    UpdateUserDto result = new UpdateUserDto();
+                    result.setUsername(user.getUsernameField()); // Usa getUsernameField()
+                    result.setFirstName(user.getFirstName());
+                    result.setLastName(user.getLastName());
+
+                    return result;
                 })
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
     }
+
+
+
 
     // Delete user along with associated events and memories
     public void deleteUser(Long id) {
