@@ -6,6 +6,7 @@ import com.eventos.recuerdos.eventify_project.invitation.dto.*;
 import com.eventos.recuerdos.eventify_project.invitation.domain.InvitationService;
 import com.eventos.recuerdos.eventify_project.invitation.infrastructure.InvitationRepository;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
+import com.eventos.recuerdos.eventify_project.securityconfig.domain.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,9 @@ public class InvitationController {
 
     @Autowired
     private InvitationRepository invitationRepository;
+
+    @Autowired
+    private JwtService jwtService;
 
     // Obtener el estado de una invitación
     @GetMapping("/{id}")
@@ -62,11 +66,27 @@ public class InvitationController {
     }
 
     // Verificar código de acceso y obtener el enlace del álbum
-    @GetMapping("/verify-access-code/{code}")
-    public ResponseEntity<String> verifyAccessCode(@PathVariable String code) {
-        MemoryDTO memory = invitationService.verifyAccessCode(code);
+    @GetMapping("/verify-access-code/{accessCode}/{userId}")
+    public ResponseEntity<String> verifyAccessCode(
+            @PathVariable String accessCode,
+            @PathVariable Long userId,
+            @RequestHeader("Authorization") String token) {
+
+        // Extraer el userId del token JWT
+        Long extractedUserId = jwtService.extractUserIdFromToken(token);
+
+        // Verificar que el userId del token coincide con el userId pasado en la URL
+        if (!userId.equals(extractedUserId)) {
+            throw new SecurityException("El userId no coincide con el token de autenticación.");
+        }
+
+        // Verificar y agregar al usuario al Memory
+        MemoryDTO memory = invitationService.verifyAccessCode(accessCode, userId);
         return ResponseEntity.ok("Código de acceso válido para el álbum en: " + memory.getAlbumLink());
     }
+
+
+
 
     // Eliminar invitación por ID
     @DeleteMapping("/{id}")

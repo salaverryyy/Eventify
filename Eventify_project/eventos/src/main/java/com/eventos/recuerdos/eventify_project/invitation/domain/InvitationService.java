@@ -7,6 +7,7 @@ import com.eventos.recuerdos.eventify_project.invitation.infrastructure.Invitati
 import com.eventos.recuerdos.eventify_project.memory.domain.Memory;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
 import com.eventos.recuerdos.eventify_project.memory.infrastructure.MemoryRepository;
+import com.eventos.recuerdos.eventify_project.securityconfig.domain.JwtService;
 import com.eventos.recuerdos.eventify_project.user.domain.UserAccount;
 import com.eventos.recuerdos.eventify_project.user.infrastructure.UserAccountRepository;
 import org.modelmapper.ModelMapper;
@@ -41,6 +42,9 @@ public class InvitationService {
 
     @Autowired
     private ModelMapper modelMapper;
+
+    @Autowired
+    private JwtService jwtService;
 
     public InvitationStatusDto getInvitationStatus(Long id) {
         Invitation invitation = invitationRepository.findById(id)
@@ -195,11 +199,44 @@ public class InvitationService {
                 .collect(Collectors.toList());
     }
 
-    public MemoryDTO verifyAccessCode(String accessCode) {
+    public MemoryDTO verifyAccessCode(String accessCode, Long userId) {
+        // Buscar el usuario por userId
+        UserAccount user = userAccountRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado."));
+
+        // Buscar el Memory asociado al código de acceso
         Memory memory = memoryRepository.findByAccessCode(accessCode);
         if (memory == null) {
             throw new ResourceNotFoundException("El código de acceso proporcionado no es válido.");
         }
+
+        // Agregar al usuario como participante si no está ya
+        if (!memory.getParticipants().contains(user)) {
+            memory.getParticipants().add(user);
+            memoryRepository.save(memory);
+        }
+
+        // Crear una invitación ficticia si el usuario no tiene una invitación aceptada para este Memory
+        boolean hasAcceptedInvitation = user.getAcceptedInvitations().stream()
+                .anyMatch(invitation -> invitation.getMemory().equals(memory));
+        if (!hasAcceptedInvitation) {
+            Invitation newInvitation = new Invitation();
+            newInvitation.setUuid(UUID.randomUUID().toString()); // Generar un UUID único
+            newInvitation.setMemory(memory);
+            newInvitation.setStatus(InvitationStatus.ACCEPTED); // Establecer el estado como ACCEPTED
+            newInvitation.setUsuarioInvitado(user); // Configurar el usuario invitado
+            newInvitation.setUsuarioInvitador(memory.getUserAccount()); // Establecer al creador del Memory como usuario invitador
+            invitationRepository.save(newInvitation);
+
+            user.getAcceptedInvitations().add(newInvitation); // Agregar la invitación al usuario
+            userAccountRepository.save(user); // Guardar cambios en el usuario
+        }
+
+        // Devolver el DTO del Memory
         return modelMapper.map(memory, MemoryDTO.class);
     }
+
+
+
+
 }
