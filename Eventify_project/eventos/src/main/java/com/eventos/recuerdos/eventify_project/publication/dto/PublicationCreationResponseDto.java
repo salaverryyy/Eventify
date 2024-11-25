@@ -23,4 +23,5 @@ public class PublicationCreationResponseDto {
 
     private LocalDateTime publicationDate;  // Fecha y hora de la publicación
 
+
 }

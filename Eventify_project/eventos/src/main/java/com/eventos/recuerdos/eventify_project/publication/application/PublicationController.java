@@ -1,8 +1,11 @@
 package com.eventos.recuerdos.eventify_project.publication.application;
 
+import com.eventos.recuerdos.eventify_project.controllers.StorageService;
 import com.eventos.recuerdos.eventify_project.like.domain.LikeService;
 import com.eventos.recuerdos.eventify_project.like.dto.LikeCountDto;
 import com.eventos.recuerdos.eventify_project.like.dto.LikeDTO;
+import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
+import com.eventos.recuerdos.eventify_project.publication.domain.Publication;
 import com.eventos.recuerdos.eventify_project.publication.domain.PublicationService;
 import com.eventos.recuerdos.eventify_project.publication.dto.PublicationCreationResponseDto;
 import com.eventos.recuerdos.eventify_project.publication.dto.PublicationDTO;
@@ -19,6 +22,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/publication")
 public class PublicationController {
+
+    @Autowired
+    private StorageService storageService;
     @Autowired
     private PublicationService publicationService;
 
@@ -31,6 +37,14 @@ public class PublicationController {
         PublicationDTO publicationDTO = publicationService.getPublicationById(id);
         return ResponseEntity.ok(publicationDTO);
     }
+    @GetMapping("/{id}/publication")
+    public ResponseEntity<String> getPublicationPhoto(@PathVariable Long id) {
+        PublicationDTO publicationDTO = publicationService.getPublicationById(id);
+        if (publicationDTO.getFileUrl() == null)
+            return ResponseEntity.notFound().build();
+        String presignedUrl = storageService.generatePresignedUrl(publicationDTO.getFileUrl());
+        return ResponseEntity.ok(presignedUrl);
+    }
 
     // Subir una nueva publicación a un recuerdo
     @PostMapping("/{memoryId}")
@@ -38,10 +52,11 @@ public class PublicationController {
             @PathVariable Long memoryId,
             @RequestParam("file") MultipartFile file,
             @RequestParam("description") String description,
-            Principal principal) {
-
+            Principal principal) throws Exception {
+        String objectKey = "publication-pics/" + file.getOriginalFilename();
+        String fileKey = storageService.uploadFile(file, objectKey);
         // Llamamos al servicio para crear la publicación y pasamos el email del usuario del token
-        PublicationCreationResponseDto createdPublication = publicationService.createPublication(memoryId, file, description, principal.getName());
+        PublicationCreationResponseDto createdPublication = publicationService.createPublication(memoryId,file, fileKey, description, principal.getName());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(createdPublication);
     }
@@ -52,10 +67,13 @@ public class PublicationController {
             @PathVariable Long id,
             @RequestParam("file") MultipartFile file,
             @RequestParam("description") String description,
-            Principal principal) {
+            Principal principal) throws Exception {
+
+        String objectKey = "publication-pics/" + file.getOriginalFilename();
+        String fileKey = storageService.uploadFile(file, objectKey);
 
         // Llamar al servicio para actualizar la publicación y obtener el email del usuario del token
-        PublicationCreationResponseDto updatedPublication = publicationService.updatePublication(id, file, description, principal.getName());
+        PublicationCreationResponseDto updatedPublication = publicationService.updatePublication(id, file,fileKey, description, principal.getName());
         return ResponseEntity.ok(updatedPublication);
     }
 
