@@ -7,6 +7,7 @@ import com.eventos.recuerdos.eventify_project.like.dto.LikeDTO;
 import com.eventos.recuerdos.eventify_project.memory.dto.MemoryDTO;
 import com.eventos.recuerdos.eventify_project.publication.domain.Publication;
 import com.eventos.recuerdos.eventify_project.publication.domain.PublicationService;
+import com.eventos.recuerdos.eventify_project.publication.dto.DetailedPublicationDTO;
 import com.eventos.recuerdos.eventify_project.publication.dto.PublicationCreationResponseDto;
 import com.eventos.recuerdos.eventify_project.publication.dto.PublicationDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,5 +91,14 @@ public class PublicationController {
         int likeCount = likeService.getLikeCountByPublication(publicationId);
         LikeCountDto likeCountDto = new LikeCountDto(likeCount);
         return ResponseEntity.ok(likeCountDto);
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<DetailedPublicationDTO>> getPublicationsForAuthor(@PathVariable Long userId) {
+        List<DetailedPublicationDTO> publications = publicationService.getPublicationsForAuthor(userId);
+        if (publications.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(publications);
     }
 }

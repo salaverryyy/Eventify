@@ -6,6 +6,7 @@ import com.eventos.recuerdos.eventify_project.like.dto.LikeDTO;
 import com.eventos.recuerdos.eventify_project.like.infrastructure.LikeRepository;
 import com.eventos.recuerdos.eventify_project.memory.domain.Memory;
 import com.eventos.recuerdos.eventify_project.memory.infrastructure.MemoryRepository;
+import com.eventos.recuerdos.eventify_project.publication.dto.DetailedPublicationDTO;
 import com.eventos.recuerdos.eventify_project.publication.dto.PublicationCreationResponseDto;
 import com.eventos.recuerdos.eventify_project.publication.dto.PublicationDTO;
 import com.eventos.recuerdos.eventify_project.publication.infrastructure.PublicationRepository;
@@ -113,5 +114,15 @@ public class PublicationService {
                 .orElseThrow(() -> new ResourceNotFoundException("Publicación no encontrada con ID: " + id));
         publicationRepository.delete(publication);
     }
+
+    public List<DetailedPublicationDTO> getPublicationsForAuthor(Long authorId) {
+        UserAccount author = userAccountRepository.findById(authorId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+        List<Publication> publications = publicationRepository.findByAuthor_Id(authorId);; // Obtiene todas las publicaciones
+        return publications.stream()
+                .map(publication -> modelMapper.map(publication, DetailedPublicationDTO.class)) // Convierte a DTO
+                .collect(Collectors.toList()); // Devuelve la lista de PublicationDTO
+    }
+
 
 }
