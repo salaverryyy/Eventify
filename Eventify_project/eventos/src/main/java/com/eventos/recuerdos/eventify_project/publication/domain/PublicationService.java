@@ -44,7 +44,7 @@ public class PublicationService {
         return modelMapper.map(publication, PublicationDTO.class);
     }
 
-    public PublicationCreationResponseDto createPublication(Long memoryId, MultipartFile file, String description, String userEmail) {
+    public PublicationCreationResponseDto createPublication(Long memoryId, MultipartFile file, String fileKey, String description, String userEmail) {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("El archivo es requerido para crear una publicación.");
         }
@@ -58,7 +58,7 @@ public class PublicationService {
 
         Publication publication = new Publication();
         publication.setDescription(description);
-        publication.setFileUrl(uploadFileToS3(file));
+        publication.setFileUrl(fileKey);
         publication.setFileType(detectFileType(file));
         publication.setAuthor(userAccount);
         publication.setMemory(memory);
@@ -68,11 +68,9 @@ public class PublicationService {
         return modelMapper.map(savedPublication, PublicationCreationResponseDto.class);
     }
 
-    private String uploadFileToS3(MultipartFile file) {
-        return "https://bucket-s3.s3.amazonaws.com/" + file.getOriginalFilename();
-    }
 
-    public PublicationCreationResponseDto updatePublication(Long id, MultipartFile file, String description, String userEmail) {
+
+    public PublicationCreationResponseDto updatePublication(Long id, MultipartFile file, String fileKey, String description, String userEmail) {
         Publication publication = publicationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Publicación no encontrada con ID: " + id));
 
@@ -88,8 +86,7 @@ public class PublicationService {
         publication.setDescription(description);
 
         if (file != null && !file.isEmpty()) {
-            String fileUrl = uploadFileToS3(file);
-            publication.setFileUrl(fileUrl);
+            publication.setFileUrl(fileKey);
             publication.setFileType(detectFileType(file));
         }
 

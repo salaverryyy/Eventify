@@ -54,4 +54,6 @@ public class Publication {
     // Relación One-to-Many con Comentarios
     @OneToMany(mappedBy = "publication", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
+
+
 }
