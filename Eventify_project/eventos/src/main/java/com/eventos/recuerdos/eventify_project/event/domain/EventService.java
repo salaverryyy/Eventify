@@ -52,7 +52,8 @@ public class EventService {
 
         // Mapear el DTO a la entidad Event
         Event event = modelMapper.map(eventDTO, Event.class);
-        event.setOrganizer(organizer);  // Asignar el organizador al evento
+        event.setOrganizer(organizer);
+        event.setLocation(eventDTO.getLocation());
 
         // Guardar el evento y mapearlo a EventBasicDTO
         Event savedEvent = eventRepository.save(event);
@@ -76,6 +77,7 @@ public class EventService {
         event.setEventName(eventDTO.getEventName());
         event.setEventDescription(eventDTO.getEventDescription());
         event.setEventDate(eventDTO.getEventDate());
+        event.setLocation(eventDTO.getLocation());
 
         // Guarda el evento actualizado
         Event updatedEvent = eventRepository.save(event);

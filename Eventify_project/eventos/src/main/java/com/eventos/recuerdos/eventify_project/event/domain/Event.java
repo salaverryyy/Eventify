@@ -23,6 +23,7 @@ public class Event {
     private String eventName;
     private String eventDescription;
     private LocalDate eventDate;
+    private String location;
 
     // Usuario organizador del evento
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
