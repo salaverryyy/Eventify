@@ -9,4 +9,5 @@ public class EventBasicDto {
     private Long eventId;
     private String eventName;
     private LocalDate eventDate;
+    private String location;
 }

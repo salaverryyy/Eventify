@@ -11,5 +11,6 @@ public class EventDTO {
     private String eventName;
     private String eventDescription;
     private LocalDate eventDate;
+    private String location;
     private MemoryDTO memory;
 }
