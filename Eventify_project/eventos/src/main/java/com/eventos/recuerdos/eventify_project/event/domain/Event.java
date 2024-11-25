@@ -11,7 +11,6 @@ import org.hibernate.annotations.OnDeleteAction;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-
 @Entity
 @Data
 public class Event {
@@ -20,9 +19,15 @@ public class Event {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @Column(length = 100) // Límite de 100 caracteres para el nombre
     private String eventName;
+
+    @Column(length = 500) // Límite de 500 caracteres para la descripción
     private String eventDescription;
+
     private LocalDate eventDate;
+
+    @Column(length = 500) // Límite de 500 caracteres para la ubicación
     private String location;
 
     // Usuario organizador del evento
@@ -35,5 +40,5 @@ public class Event {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "memory_id", unique = true)
     private Memory memory;
-
 }
+
