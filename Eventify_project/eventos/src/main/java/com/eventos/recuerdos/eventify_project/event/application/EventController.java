@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 import java.security.Principal;
@@ -28,6 +30,9 @@ public class EventController {
 
     @Autowired
     private UserAccountRepository userAccountRepository;
+
+    private static final Logger log = LoggerFactory.getLogger(EventController.class);
+
 
 
     //Obtener los detalles de un evento
@@ -78,6 +83,7 @@ public class EventController {
     @PostMapping("/{eventId}/memory/{memoryId}")
     public ResponseEntity<EventDTO> addMemoryToEvent(@PathVariable Long eventId, @PathVariable Long memoryId) {
         EventDTO updatedEvent = eventService.addMemoryToEvent(eventId, memoryId);
+        log.debug("Asociando memory {} al event {}", memoryId, eventId);
         return ResponseEntity.ok(updatedEvent);
     }
 
