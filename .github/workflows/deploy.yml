@@ -24,7 +24,7 @@ jobs:
           cache: maven
 
       - name: Build and test with Maven
-        run: mvn -B clean package --file BACKEND/Eventify/Eventify_project/eventos/pom.xml
+        run: mvn -B clean package --file pom.xml
 
       - name: Build Docker image
         run: |
