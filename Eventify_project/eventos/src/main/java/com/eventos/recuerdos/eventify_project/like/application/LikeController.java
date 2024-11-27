@@ -23,6 +23,14 @@ public class LikeController {
         return ResponseEntity.ok("Like agregado exitosamente.");
     }
 
+    // Quitar "me gusta" de una publicación
+    @PostMapping("/{publicationId}/unlike")
+    public ResponseEntity<String> unlikePublication(@PathVariable Long publicationId, Principal principal) {
+        likeService.unlikePublication(publicationId, principal.getName());
+        return ResponseEntity.ok("Like eliminado exitosamente.");
+    }
+
+
     // Obtener la lista de usuarios que han dado "me gusta" a una publicación
     @GetMapping("/{id}/likes")
     public ResponseEntity<List<UserDTO>> getUsersWhoLikedPublication(@PathVariable Long id) {
@@ -36,4 +44,6 @@ public class LikeController {
         List<LikeDTO> likes = likeService.getAllLikes();
         return ResponseEntity.ok(likes);
     }
+
+
 }
