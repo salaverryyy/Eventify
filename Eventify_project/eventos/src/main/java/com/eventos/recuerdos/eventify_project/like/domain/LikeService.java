@@ -83,4 +83,28 @@ public class LikeService {
                 .map(publicationLike -> modelMapper.map(publicationLike, LikeDTO.class))
                 .collect(Collectors.toList());
     }
+
+    // Añade este metodo para quitar "me gusta" de una publicación
+    public void unlikePublication(Long publicationId, String userEmail) {
+        // Buscar la publicación por su ID
+        Publication publication = publicationRepository.findById(publicationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Publicación no encontrada con id: " + publicationId));
+
+        // Obtener el usuario autenticado
+        UserAccount userAccount = userAccountRepository.findByEmail(userEmail);
+        if (userAccount == null) {
+            throw new ResourceNotFoundException("Usuario no encontrado con email: " + userEmail);
+        }
+
+        // Buscar el "me gusta" existente
+        Optional<PublicationLike> existingLike = likeRepository.findByPublicationAndUserAccount(publication, userAccount);
+
+        if (existingLike.isPresent()) {
+            // Si existe, eliminar el "me gusta"
+            likeRepository.delete(existingLike.get());
+        } else {
+            throw new ResourceNotFoundException("El usuario no ha dado 'me gusta' a esta publicación.");
+        }
+    }
+
 }
