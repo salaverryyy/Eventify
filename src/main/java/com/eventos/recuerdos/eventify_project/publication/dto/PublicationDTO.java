@@ -19,7 +19,6 @@ public class PublicationDTO {
     private FileType type;  // FOTO o VIDEO
 
     @NotBlank(message = "La URL no puede estar en blanco.")
-
     private String fileUrl;  // URL del archivo (en AWS S3)
     private String description;  // Descripción de la publicación
     private LocalDateTime publicationDate;  // Fecha y hora de la publicación
